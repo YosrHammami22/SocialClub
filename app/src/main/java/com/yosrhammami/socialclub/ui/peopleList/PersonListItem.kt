@@ -24,6 +24,7 @@ import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
+import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 
 @Composable
 fun PersonListItem(
@@ -31,11 +32,7 @@ fun PersonListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val placeholder = when (person.gender) {
-        Gender.MALE -> R.drawable.ic_avatar_male
-        Gender.FEMALE -> R.drawable.ic_avatar_female
-        Gender.UNKNOWN -> R.drawable.ic_avatar_neutral
-    }
+    val placeholder = person.gender.toPlaceholderDrawable()
 
     Row(modifier = modifier
         .fillMaxWidth()
@@ -49,7 +46,7 @@ fun PersonListItem(
     ) {
         AsyncImage(
             model = person.photoUrl,
-            contentDescription =null,
+            contentDescription = null,
             placeholder = painterResource(placeholder),
             error = painterResource(placeholder),
             contentScale = ContentScale.Crop,
@@ -76,24 +73,23 @@ fun PersonListItem(
         }
     }
 }
+
 @ThemePreviews
 @Composable
 fun PersonListItemPreview() {
     SocialClubTheme {
         Surface {
-            PersonListItem(
-                person = Person(
-                    id = "1",
-                    fullName = "Jane Doe",
-                    email = "jane@test.com",
-                    city = "Paris",
-                    country = "France",
-                    age = 29,
-                    photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
-                    gender = Gender.UNKNOWN
-                ),
-                onClick = {}
-            )
+            PersonListItem(person = Person(
+                id = "1",
+                fullName = "Jane Doe",
+                email = "jane@test.com",
+                city = "Paris",
+                country = "France",
+                age = 29,
+                photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
+                gender = Gender.UNKNOWN
+            ),
+                onClick = {})
         }
     }
 }
