@@ -76,6 +76,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     // serialization
     implementation(libs.kotlinx.serialization.json)
+    // handle image
+    implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

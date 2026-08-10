@@ -5,6 +5,7 @@ data class RandomUserResponse(
 )
 
 data class PersonDto(
+    val gender: String?=null,
     val name: NameDto,
     val email: String,
     val location: LocationDto,

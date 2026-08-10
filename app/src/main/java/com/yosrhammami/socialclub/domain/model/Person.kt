@@ -7,5 +7,9 @@ data class Person(
     val city: String,
     val country: String,
     val age: Int,
-    val photoUrl: String
+    val photoUrl: String,
+    val gender: Gender= Gender.UNKNOWN
 )
+enum class Gender {
+    MALE, FEMALE, UNKNOWN
+}

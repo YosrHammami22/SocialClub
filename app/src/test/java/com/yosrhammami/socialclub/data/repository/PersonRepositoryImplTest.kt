@@ -42,7 +42,8 @@ class PersonRepositoryImplTest {
             picture = PictureDto("large.jpg", "thumb.jpg"),
             phone = "123",
             dob = DobDto(29),
-            login = LoginDto("uuid-1")
+            login = LoginDto("uuid-1"),
+            gender = "female"
         )
         fakeApiService.responseToReturn = RandomUserResponse(results = listOf(dto))
 

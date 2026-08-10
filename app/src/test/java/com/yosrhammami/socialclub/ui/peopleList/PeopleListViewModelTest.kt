@@ -1,14 +1,14 @@
-package com.yosrhammami.socialclub
+package com.yosrhammami.socialclub.ui.peopleList
 
+import com.yosrhammami.socialclub.FakePersonRepository
+import com.yosrhammami.socialclub.MainDispatcherRule
+import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.domain.usecase.GetPeopleUseCase
-import com.yosrhammami.socialclub.ui.peopleList.PeopleListUiState
-import com.yosrhammami.socialclub.ui.peopleList.PeopleListViewModel
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 
 class PeopleListViewModelTest {
 
@@ -29,7 +29,8 @@ class PeopleListViewModelTest {
                 city = "Paris",
                 country = "France",
                 age = 29,
-                photoUrl = ""
+                photoUrl = "",
+                gender = Gender.UNKNOWN
             )
         )
         fakeRepository.peopleToReturn = fakePeople
@@ -39,8 +40,8 @@ class PeopleListViewModelTest {
 
         // Assert
         val state = viewModel.uiState.value
-        assertTrue(state is PeopleListUiState.Success)
-        assertEquals(
+        Assert.assertTrue(state is PeopleListUiState.Success)
+        Assert.assertEquals(
             fakePeople,
             (state as PeopleListUiState.Success).people
         )
@@ -56,6 +57,6 @@ class PeopleListViewModelTest {
 
         // Assert
         val state = viewModel.uiState.value
-        assertTrue(state is PeopleListUiState.Error)
+        Assert.assertTrue(state is PeopleListUiState.Error)
     }
 }

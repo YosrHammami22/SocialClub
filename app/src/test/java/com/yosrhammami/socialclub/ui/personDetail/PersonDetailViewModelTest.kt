@@ -3,12 +3,12 @@ package com.yosrhammami.socialclub.ui.personDetail
 import com.yosrhammami.socialclub.FakeLogger
 import com.yosrhammami.socialclub.FakePersonRepository
 import com.yosrhammami.socialclub.MainDispatcherRule
+import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.domain.usecase.GetPersonDetailUseCase
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -24,7 +24,7 @@ class PersonDetailViewModelTest {
     @Test
     fun `when person exists, uiState becomes Success`() = runTest {
         // Arrange
-        val jane = Person(id = "1", fullName = "Jane Doe", email = "jane@test.com", city = "Paris", country = "France", age = 29, photoUrl = "")
+        val jane = Person(id = "1", fullName = "Jane Doe", email = "jane@test.com", city = "Paris", country = "France", age = 29, photoUrl = "", gender = Gender.UNKNOWN)
         fakeRepository.peopleToReturn = listOf(jane)
 
         // Act

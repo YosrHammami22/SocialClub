@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.data.remote
 
+import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 /*
 data layer  →  knows about BOTH DTO and domain Person  →  mapper lives here
@@ -13,6 +14,11 @@ fun PersonDto.toDomain(): Person {
         city = location.city,
         country = location.country,
         age = dob.age,
-        photoUrl = picture.large
+        photoUrl = picture.large,
+        gender = when (gender?.lowercase()) {
+            "male" -> Gender.MALE
+            "female" -> Gender.FEMALE
+            else -> Gender.UNKNOWN
+        }
     )
 }
