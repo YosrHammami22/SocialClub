@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,13 +30,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import coil.compose.AsyncImage
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Person
+import com.yosrhammami.socialclub.ui.personDetail.uiState.IcebreakerUiState
+import com.yosrhammami.socialclub.ui.personDetail.uiState.PersonDetailUiState
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
+import androidx.compose.foundation.layout.Row as Row1
 
 @Composable
 fun PersonDetailScreen(
@@ -46,11 +50,23 @@ fun PersonDetailScreen(
         viewModel.loadPerson(personId)              // <- you trigger loading explicitly
     }
     val uiState by viewModel.uiState.collectAsState()
-    PersonDetailContent(uiState = uiState)
+    val icebreakerState by viewModel.icebreakerState.collectAsState()
+
+    PersonDetailContent(
+        uiState = uiState,
+        icebreakerState = icebreakerState,
+        onGenerateIcebreakerClick = {
+            viewModel.onGenerateIcebreakerClick()
+        }
+    )
 }
 
 @Composable
-fun PersonDetailContent(uiState: PersonDetailUiState) {
+fun PersonDetailContent(
+    uiState: PersonDetailUiState,
+    icebreakerState: IcebreakerUiState,
+    onGenerateIcebreakerClick: () -> Unit
+) {
 
     when (uiState) {
         is PersonDetailUiState.Loading -> {
@@ -63,7 +79,11 @@ fun PersonDetailContent(uiState: PersonDetailUiState) {
         }
 
         is PersonDetailUiState.Success -> {
-            PersonDetailContentSuccess(person = uiState.person)
+            PersonDetailContentSuccess(
+                person = uiState.person,
+                icebreakerState = icebreakerState,
+                onGenerateIcebreakerClick=onGenerateIcebreakerClick
+            )
         }
 
         is PersonDetailUiState.Error -> {
@@ -78,7 +98,11 @@ fun PersonDetailContent(uiState: PersonDetailUiState) {
 }
 
 @Composable
-fun PersonDetailContentSuccess(person: Person) {
+fun PersonDetailContentSuccess(
+    person: Person,
+    icebreakerState: IcebreakerUiState,
+    onGenerateIcebreakerClick: () -> Unit
+) {
     val context = LocalContext.current
     val placeholder = person.gender.toPlaceholderDrawable()
     Column(
@@ -113,23 +137,66 @@ fun PersonDetailContentSuccess(person: Person) {
         )
 
         Spacer(Modifier.height(20.dp))
-
-        IconButton(onClick = {
-            Toast.makeText(
-                context,
-                "I want to tag you",
-                Toast.LENGTH_SHORT
-            )
-                .show()
-        },
-            modifier = Modifier.semantics {
-                contentDescription = "Tag ${person.fullName}"
+        Row1(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center, // Centers the pair in the middle of the screen
+            verticalAlignment = Alignment.CenterVertically // Aligns them nicely if they have different sizes
+        ) {
+            IconButton(onClick = {
+                Toast.makeText(
+                    context,
+                    "I want to tag you",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
             }) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_pisst),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_pisst),
+                    contentDescription = "I want to tag you",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+
+            // Add spacing between the buttons
+            Spacer(modifier = Modifier.width(8.dp))
+            IcebreakerContent(uiState = icebreakerState, onGenerateIcebreakerClick = onGenerateIcebreakerClick)
+        }
+    }
+}
+
+@Composable
+fun IcebreakerContent(
+    uiState: IcebreakerUiState,
+    onGenerateIcebreakerClick: () -> Unit = {}
+) {
+
+    Button(onClick = {onGenerateIcebreakerClick()}) {
+        Text("Generate icebreaker ✨")
+    }
+    when (uiState) {
+        is IcebreakerUiState.Idle -> { /* nothing shown */
+        }
+
+        is IcebreakerUiState.Loading -> {
+            Spacer(Modifier.height(12.dp))
+            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+        }
+
+        is IcebreakerUiState.Success -> {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                text = uiState.text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+        }
+
+        is IcebreakerUiState.Error -> {
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "Couldn't generate an icebreaker, try again",
+                color = MaterialTheme.colorScheme.error
             )
         }
     }
@@ -147,6 +214,10 @@ fun PersonDetailSuccessPreview() {
         age = 29,
         photoUrl = "https://randomuser.me/api/portraits/women/44.jpg"
     )
-    PersonDetailContentSuccess(person)
+    PersonDetailContentSuccess(
+        person,
+        IcebreakerUiState.Idle,
+        onGenerateIcebreakerClick = {}
+    )
 
 }
