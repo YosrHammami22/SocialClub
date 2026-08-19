@@ -6,6 +6,8 @@ import com.yosrhammami.socialclub.MainDispatcherRule
 import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.domain.usecase.GetPersonDetailUseCase
+import com.yosrhammami.socialclub.ui.FakeGenerateIcebreaker
+import com.yosrhammami.socialclub.ui.personDetail.uiState.PersonDetailUiState
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 
@@ -18,6 +20,7 @@ class PersonDetailViewModelTest {
 
     private val fakeRepository = FakePersonRepository()
     private val getPersonDetailUseCase = GetPersonDetailUseCase(fakeRepository)
+    private val fakeGenerateIcebreaker= FakeGenerateIcebreaker()
     private val fakeLogger = FakeLogger()   // <- no Android framework involved at all
 
 
@@ -28,7 +31,7 @@ class PersonDetailViewModelTest {
         fakeRepository.peopleToReturn = listOf(jane)
 
         // Act
-        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeLogger)
+        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeGenerateIcebreaker,fakeLogger)
         viewModel.loadPerson("1")
 
         // Assert
@@ -43,7 +46,7 @@ class PersonDetailViewModelTest {
         fakeRepository.peopleToReturn = emptyList()
 
         // Act
-        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeLogger)
+        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeGenerateIcebreaker,fakeLogger)
         viewModel.loadPerson("nonexistent-id")
 
         // Assert
@@ -57,7 +60,7 @@ class PersonDetailViewModelTest {
         fakeRepository.shouldThrowError = true
 
         // Act
-        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeLogger)
+        val viewModel = PersonDetailViewModel(getPersonDetailUseCase,fakeGenerateIcebreaker,fakeLogger)
         viewModel.loadPerson("1")
 
         // Assert
