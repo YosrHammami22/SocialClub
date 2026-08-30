@@ -21,6 +21,7 @@ kotlinxSerialization = "1.6.3"
 coroutinesTest="1.9.0"
 turbine="1.1.0"
 coil = "2.7.0"
+firebase-bom = "33.5.1"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -55,6 +56,12 @@ kotlinx-coroutines-test={group = "org.jetbrains.kotlinx", name="kotlinx-coroutin
 turbine={group="app.cash.turbine", name="turbine", version.ref="turbine"}
 # The core Coil library for Compose for display Image
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+# 2. Define the BOM platform
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+
+# 3. Define the specific Firebase libraries (No version needed because of BOM)
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

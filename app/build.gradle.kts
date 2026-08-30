@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.hilt.android) // 1. Apply the Hilt Plugin
     id("kotlin-kapt")               // 2. Apply KAPT (required for Hilt)
     id("kotlinx-serialization")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -78,7 +79,12 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // handle image
     implementation(libs.coil.compose)
+    // Import the BoM using the catalog reference
+    implementation(platform(libs.firebase.bom))
 
+    // Add Firestore and Auth (versions are managed by the BoM)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
