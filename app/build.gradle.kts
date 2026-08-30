@@ -81,7 +81,8 @@ dependencies {
     implementation(libs.coil.compose)
     // Import the BoM using the catalog reference
     implementation(platform(libs.firebase.bom))
-
+    // Import Kotlin  coroutines-Play-Services bridge
+    implementation(libs.kotlinx.coroutines.play.services)
     // Add Firestore and Auth (versions are managed by the BoM)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
@@ -94,5 +95,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
-
+    testImplementation(libs.mockk)
 }

@@ -7,3 +7,11 @@ object PeopleListRoute
 
 @Serializable
 data class PersonDetailRoute(val personId: String)
+
+@Serializable
+object HomeRoute
+
+@Serializable
+data class AttendeeRoute(val personId: String)
+
+// existing PeopleListRoute, PersonDetailRoute stay as-is
