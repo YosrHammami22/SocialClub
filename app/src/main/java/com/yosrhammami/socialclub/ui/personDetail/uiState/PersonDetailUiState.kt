@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.personDetail
+package com.yosrhammami.socialclub.ui.personDetail.uiState
 
 import com.yosrhammami.socialclub.domain.model.Person
 
