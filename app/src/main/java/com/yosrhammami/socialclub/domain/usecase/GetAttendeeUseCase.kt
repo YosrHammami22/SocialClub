@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetAttendeeUseCase @Inject constructor(
     private val repository: AttendeeRepository
 ) {
-    suspend operator fun invoke(personId: String): Attendee? {
-        return repository.getAttendee(personId)
+    suspend operator fun invoke(email: String): Attendee? {
+        return repository.findAttendeeByEmail(email)
     }
 }

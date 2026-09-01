@@ -20,11 +20,11 @@ class AttendeeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AttendeeUiState>(AttendeeUiState.Idle)
     val uiState: StateFlow<AttendeeUiState> = _uiState.asStateFlow()
 
-    fun loadAttendee(personId: String) {
+    fun loadAttendee(email: String) {
         viewModelScope.launch {
             _uiState.value = AttendeeUiState.Loading
             try {
-                val attendee = getAttendeeUseCase(personId)
+                val attendee = getAttendeeUseCase.invoke(email)
                 _uiState.value = if (attendee != null) {
                     AttendeeUiState.Success(attendee)
                 } else {

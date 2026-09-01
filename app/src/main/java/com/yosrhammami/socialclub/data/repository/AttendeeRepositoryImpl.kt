@@ -10,8 +10,8 @@ class AttendeeRepositoryImpl @Inject constructor(
     private val remoteDataSource: AttendeeRemoteDataSource
 ) : AttendeeRepository {
 
-    override suspend fun getAttendee(personId: String): Attendee? {
-        val dto = remoteDataSource.getAttendee(personId) ?: return null
-        return dto.toDomain(id = personId)
+    override suspend fun findAttendeeByEmail(email: String): Attendee? {
+        val dto = remoteDataSource.findAttendeeByEmail(email) ?: return null
+        return dto.toDomain(id = email)
     }
 }

@@ -28,12 +28,13 @@ class AttendeeViewModelTest{
             fullName = "Jane Doe",
             email = "jane@test.com",
             prompt = "Android dev, love hiking",
+            age = 18,
             tags = listOf("android", "hiking")
         )
-        coEvery { fakeRepository.getAttendee("1") } returns jane
+        coEvery { fakeRepository.findAttendeeByEmail("jane@test.com") } returns jane
         // Act
         val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
-        viewModel.loadAttendee("1")
+        viewModel.loadAttendee("jane@test.com")
 
         // Assert
         val state = viewModel.uiState.value
@@ -45,7 +46,7 @@ class AttendeeViewModelTest{
     @Test
     fun `when attendee does not exist, uiState becomes Error`() = runTest {
         // Arrange
-        coEvery { fakeRepository.getAttendee("unknown-id") } returns null
+        coEvery { fakeRepository.findAttendeeByEmail("unknown-id") } returns null
 
         // Act
         val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
@@ -60,11 +61,11 @@ class AttendeeViewModelTest{
     @Test
     fun `when repository throws, uiState becomes Error`() = runTest {
         // Arrange
-        coEvery { fakeRepository.getAttendee("1") } throws Exception("Network error")
+        coEvery { fakeRepository.findAttendeeByEmail("jane@test.com") } throws Exception("Network error")
 
         // Act
         val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
-        viewModel.loadAttendee("1")
+        viewModel.loadAttendee("jane@test.com")
 
         // Assert
         val state = viewModel.uiState.value

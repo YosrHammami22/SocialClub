@@ -18,11 +18,11 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 
 @Composable
 fun AttendeeScreen(
-    personId: String,
+    email: String,
     viewModel: AttendeeViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(personId) {
-        viewModel.loadAttendee(personId)
+    LaunchedEffect(email) {
+        viewModel.loadAttendee(email)
     }
     val uiState by viewModel.uiState.collectAsState()
 
@@ -69,6 +69,7 @@ fun AttendeeScreenPreviews() {
         fullName = "fullname",
         email = "email",
         prompt = "prompt",
+        age = 18,
         tags = listOf(
             "tag1",
             "tag2"
