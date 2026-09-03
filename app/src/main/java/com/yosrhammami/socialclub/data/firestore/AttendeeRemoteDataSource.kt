@@ -16,7 +16,8 @@ class AttendeeRemoteDataSource @Inject constructor(
             .await()
 
         val document = snapshot.documents.firstOrNull() ?: return null
-        val dto = document.toObject(AttendeeDto::class.java) ?: return null
+      //  val dto = document.toObject(AttendeeDto::class.java)?.copy(id=document.id) ?: return null
+        val dto = document.toObject(AttendeeDto::class.java)?: return null
         return dto
     }
 }

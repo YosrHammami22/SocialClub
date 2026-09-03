@@ -1,9 +1,11 @@
 package com.yosrhammami.socialclub.ui.attendee
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.yosrhammami.socialclub.core.util.Logger
-import com.yosrhammami.socialclub.domain.usecase.GetAttendeeUseCase
+import com.yosrhammami.socialclub.domain.model.AttendeeWithRegistrationsResult
+import com.yosrhammami.socialclub.domain.usecase.GetAttendeeWithRegistrationsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,27 +15,44 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AttendeeViewModel @Inject constructor(
-    private val getAttendeeUseCase: GetAttendeeUseCase,
-    private val logger: Logger
-) : ViewModel() {
+    private val getAttendeeWithRegistrationsUseCase: GetAttendeeWithRegistrationsUseCase,
+    private val logger: Logger,
+    savedStateHandle: SavedStateHandle
+): ViewModel() {
 
+    private val email: String = checkNotNull(savedStateHandle["email"])
     private val _uiState = MutableStateFlow<AttendeeUiState>(AttendeeUiState.Idle)
     val uiState: StateFlow<AttendeeUiState> = _uiState.asStateFlow()
+   init {
+       loadAttendee(email)
+   }
 
-    fun loadAttendee(email: String) {
+     private fun loadAttendee(email: String) {
+
         viewModelScope.launch {
             _uiState.value = AttendeeUiState.Loading
             try {
-                val attendee = getAttendeeUseCase.invoke(email)
-                _uiState.value = if (attendee != null) {
-                    AttendeeUiState.Success(attendee)
-                } else {
-                    AttendeeUiState.Error("Attendee not found")
+                when (val result = getAttendeeWithRegistrationsUseCase(email)) {
+                    is AttendeeWithRegistrationsResult.Found -> _uiState.value =
+                        AttendeeUiState.Success(
+                            attendee = result.attendee,
+                            registrations = result.registrations
+                        )
+
+                    is AttendeeWithRegistrationsResult.AttendeeNotFound -> _uiState.value =
+                        AttendeeUiState.AttendeeNotFound
                 }
-            } catch (e: Exception) {
-                logger.e("Error loading attendee", e)
+
+            }
+            catch (e: Exception) {
+                logger.e(
+                    "Error loading attendee",
+                    e
+                )
                 _uiState.value = AttendeeUiState.Error(e.message ?: "Unknown error")
+
             }
         }
+
     }
 }

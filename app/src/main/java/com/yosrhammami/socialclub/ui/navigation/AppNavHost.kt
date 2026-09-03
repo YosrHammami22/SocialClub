@@ -19,16 +19,20 @@ fun AppNavHost() {
         startDestination = HomeRoute
     ) {
         composable<HomeRoute> {
-            HomeScreen(onAttendeeFound = {attendee ->
-                navController.navigate(AttendeeRoute(personId = attendee.id))
-            },
+            HomeScreen(
+                onValidEmail = { email ->
+                    navController.navigate(AttendeeRoute(email = email)) {
+                        launchSingleTop = true
+                    }
+                },
                 onGetFromApiClick = {
                     navController.navigate(PeopleListRoute)
-                })
+                }
+            )
         }
         composable<AttendeeRoute> {backStackEntry ->
             val route: AttendeeRoute = backStackEntry.toRoute()
-            AttendeeScreen(email = route.personId)
+            AttendeeScreen(email = route.email)
         }
 
         composable<PeopleListRoute> {

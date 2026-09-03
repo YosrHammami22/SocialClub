@@ -15,7 +15,6 @@ class RegistrationRemoteDataSource @Inject constructor(private val firestore: Fi
             )
             .get()
             .await()
-
         return snapshot.toObjects(RegistrationDto::class.java)
     }
 

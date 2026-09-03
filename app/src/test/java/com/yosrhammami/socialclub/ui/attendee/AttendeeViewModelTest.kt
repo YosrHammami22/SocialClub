@@ -1,10 +1,14 @@
 package com.yosrhammami.socialclub.ui.attendee
 
+import androidx.lifecycle.SavedStateHandle
 import com.yosrhammami.socialclub.FakeLogger
 import com.yosrhammami.socialclub.MainDispatcherRule
 import com.yosrhammami.socialclub.domain.model.Attendee
+import com.yosrhammami.socialclub.domain.model.AttendeeWithRegistrationsResult
+import com.yosrhammami.socialclub.domain.model.PaymentStatus
+import com.yosrhammami.socialclub.domain.model.Registration
 import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
-import com.yosrhammami.socialclub.domain.usecase.GetAttendeeUseCase
+import com.yosrhammami.socialclub.domain.usecase.GetAttendeeWithRegistrationsUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -17,55 +21,65 @@ class AttendeeViewModelTest{
     val mainDispatcherRule = MainDispatcherRule()
 
     private val fakeRepository = mockk<AttendeeRepository>()
-    private val getAttendeeUseCase = GetAttendeeUseCase(fakeRepository)
+    private val fakeUseCase = mockk<GetAttendeeWithRegistrationsUseCase>()
     private val fakeLogger = FakeLogger()
+    private fun createViewModel(email: String = "jane@test.com"): AttendeeViewModel {
+        val savedStateHandle = SavedStateHandle(mapOf("email" to email))
+        return AttendeeViewModel(fakeUseCase, fakeLogger, savedStateHandle)
+    }
 
     @Test
-    fun `when attendee exists, uiState becomes Success`() = runTest {
-// Arrange
+    fun `when attendee is found, uiState becomes Success with attendee and registrations`() = runTest {
+        // Arrange
         val jane = Attendee(
             id = "1",
             fullName = "Jane Doe",
+            age=33,
             email = "jane@test.com",
-            prompt = "Android dev, love hiking",
-            age = 18,
-            tags = listOf("android", "hiking")
+            prompt = "Android dev",
+            tags = listOf("android")
         )
-        coEvery { fakeRepository.findAttendeeByEmail("jane@test.com") } returns jane
+        val registrations = listOf(
+            Registration(
+                id = "r1",
+                personId = "1",
+                eventId = "e1",
+                paymentStatus = PaymentStatus.PAID,
+                qrCode = "A-123",
+                registeredAt = 0L
+            )
+        )
+        coEvery { fakeUseCase("jane@test.com") } returns
+                AttendeeWithRegistrationsResult.Found(jane, registrations)
+
         // Act
-        val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
-        viewModel.loadAttendee("jane@test.com")
+        val viewModel = createViewModel(email = "jane@test.com")
 
         // Assert
         val state = viewModel.uiState.value
         assertTrue(state is AttendeeUiState.Success)
         assertEquals(jane, (state as AttendeeUiState.Success).attendee)
-
+        assertEquals(registrations, state.registrations)
     }
-
     @Test
-    fun `when attendee does not exist, uiState becomes Error`() = runTest {
+    fun `when attendee is not found, uiState becomes AttendeeNotFound`() = runTest {
         // Arrange
-        coEvery { fakeRepository.findAttendeeByEmail("unknown-id") } returns null
+        coEvery { fakeUseCase("unknown@test.com") } returns
+                AttendeeWithRegistrationsResult.AttendeeNotFound
 
         // Act
-        val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
-        viewModel.loadAttendee("unknown-id")
+        val viewModel = createViewModel(email = "unknown@test.com")
 
         // Assert
-        val state = viewModel.uiState.value
-        assertTrue(state is AttendeeUiState.Error)
-        assertEquals("Attendee not found", (state as AttendeeUiState.Error).message)
+        assertTrue(viewModel.uiState.value is AttendeeUiState.AttendeeNotFound)
     }
-
     @Test
-    fun `when repository throws, uiState becomes Error`() = runTest {
+    fun `when use case throws, uiState becomes Error`() = runTest {
         // Arrange
-        coEvery { fakeRepository.findAttendeeByEmail("jane@test.com") } throws Exception("Network error")
+        coEvery { fakeUseCase("jane@test.com") } throws Exception("Network error")
 
         // Act
-        val viewModel = AttendeeViewModel(getAttendeeUseCase, fakeLogger)
-        viewModel.loadAttendee("jane@test.com")
+        val viewModel = createViewModel(email = "jane@test.com")
 
         // Assert
         val state = viewModel.uiState.value

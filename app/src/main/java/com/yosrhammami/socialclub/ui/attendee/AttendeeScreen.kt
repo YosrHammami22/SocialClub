@@ -3,16 +3,17 @@ package com.yosrhammami.socialclub.ui.attendee
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 
@@ -21,23 +22,35 @@ fun AttendeeScreen(
     email: String,
     viewModel: AttendeeViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(email) {
-        viewModel.loadAttendee(email)
-    }
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
-        Modifier.fillMaxSize(),
+        Modifier
+            .fillMaxSize()
+            .padding(top = 24.dp),
         contentAlignment = Alignment.Center
     ) {
-        when (uiState) {
+        when (val state = uiState) {
             is AttendeeUiState.Idle, is AttendeeUiState.Loading -> {
                 CircularProgressIndicator()
             }
 
             is AttendeeUiState.Success -> {
-                val attendee = (uiState as AttendeeUiState.Success).attendee
-                AttendeeBlock(attendee)
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AttendeeBlock(state.attendee)
+
+                    RegistrationList(state.registrations)
+
+                }
+            }
+
+            is AttendeeUiState.AttendeeNotFound -> {
+                Text("We couldn't find an attendee with this email.")
             }
 
             is AttendeeUiState.Error -> {

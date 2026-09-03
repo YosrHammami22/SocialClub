@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 
@@ -26,7 +27,7 @@ fun PeopleListScreen(
     viewModel: PeopleListViewModel = hiltViewModel(),
     onPersonClick: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     PeopleListContent(
         uiState = uiState,
         onPersonClick = onPersonClick

@@ -1,9 +1,11 @@
 package com.yosrhammami.socialclub.data.remote
 
+import com.google.firebase.firestore.DocumentId
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.Gender
 
 data class AttendeeDto(
+    @DocumentId val id: String="",
     val fullName: String = "",
     val email: String = "",
     val gender: String?=null,
@@ -12,7 +14,7 @@ data class AttendeeDto(
     val tags: List<String> = emptyList()
 )
 
-fun AttendeeDto.toDomain(id: String): Attendee {
+fun AttendeeDto.toDomain(): Attendee {
     return Attendee(
         id = id,
         fullName = fullName,

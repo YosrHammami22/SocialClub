@@ -1,7 +1,7 @@
 package com.yosrhammami.socialclub.domain.model
 
 data class Registration(
-    val id: String,
+    val id:String,
     val personId: String,
     val eventId: String,
     val paymentStatus: PaymentStatus,
