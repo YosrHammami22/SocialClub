@@ -1,8 +1,10 @@
 package com.yosrhammami.socialclub.data.remote
 
+import com.google.firebase.firestore.DocumentId
 import com.yosrhammami.socialclub.domain.model.Event
 
 data class EventDto(
+    @DocumentId val id: String="",
     val name: String = "",
     val date: com.google.firebase.Timestamp? = null,
     val location: String = ""

@@ -9,11 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.yosrhammami.socialclub.domain.model.Registration
+import com.yosrhammami.socialclub.domain.model.RegistrationWithEvent
 
 @Composable
 fun RegistrationList(
-    registrations: List<Registration>,
+    registrations: List<RegistrationWithEvent>,
     modifier: Modifier = Modifier
 ) {
     if (registrations.isEmpty()) {
@@ -27,8 +27,8 @@ fun RegistrationList(
     ) {
         items(
             items = registrations,
-            key = {it.qrCode}) {registration ->
-            RegistrationItem(registration = registration)
+            key = {it.registration.id}) {registration ->
+            RegistrationItem(item = registration)
         }
     }
 }

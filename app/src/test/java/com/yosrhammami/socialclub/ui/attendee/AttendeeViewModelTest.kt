@@ -5,8 +5,10 @@ import com.yosrhammami.socialclub.FakeLogger
 import com.yosrhammami.socialclub.MainDispatcherRule
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.AttendeeWithRegistrationsResult
+import com.yosrhammami.socialclub.domain.model.Event
 import com.yosrhammami.socialclub.domain.model.PaymentStatus
 import com.yosrhammami.socialclub.domain.model.Registration
+import com.yosrhammami.socialclub.domain.model.RegistrationWithEvent
 import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
 import com.yosrhammami.socialclub.domain.usecase.GetAttendeeWithRegistrationsUseCase
 import io.mockk.coEvery
@@ -27,28 +29,28 @@ class AttendeeViewModelTest{
         val savedStateHandle = SavedStateHandle(mapOf("email" to email))
         return AttendeeViewModel(fakeUseCase, fakeLogger, savedStateHandle)
     }
-
+    private val registration= Registration(
+        id = "r1",
+        personId = "1",
+        eventId = "e1",
+        paymentStatus = PaymentStatus.PAID,
+        qrCode = "A-123",
+        registeredAt = 0L
+    )
+    private val jane = Attendee(
+        id = "1",
+        fullName = "Jane Doe",
+        age=33,
+        email = "jane@test.com",
+        prompt = "Android dev",
+        tags = listOf("android")
+    )
+    private val event=Event(id="id",name="name",date=1,location="location")
+    private val registrationWithEvent= RegistrationWithEvent(registration=registration,event= event)
+    private val registrations = listOf(registrationWithEvent)
     @Test
     fun `when attendee is found, uiState becomes Success with attendee and registrations`() = runTest {
-        // Arrange
-        val jane = Attendee(
-            id = "1",
-            fullName = "Jane Doe",
-            age=33,
-            email = "jane@test.com",
-            prompt = "Android dev",
-            tags = listOf("android")
-        )
-        val registrations = listOf(
-            Registration(
-                id = "r1",
-                personId = "1",
-                eventId = "e1",
-                paymentStatus = PaymentStatus.PAID,
-                qrCode = "A-123",
-                registeredAt = 0L
-            )
-        )
+
         coEvery { fakeUseCase("jane@test.com") } returns
                 AttendeeWithRegistrationsResult.Found(jane, registrations)
 
