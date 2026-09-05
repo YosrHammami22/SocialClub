@@ -20,7 +20,8 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 @Composable
 fun AttendeeScreen(
     email: String,
-    viewModel: AttendeeViewModel = hiltViewModel()
+    viewModel: AttendeeViewModel = hiltViewModel(),
+    onEventClick: (eventId: String,currentAttendeeId: String ) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -44,7 +45,8 @@ fun AttendeeScreen(
                 ) {
                     AttendeeBlock(state.attendee)
 
-                    RegistrationList(state.registrations)
+                    RegistrationList(state.registrations,  onCardClick = {eventId ->
+                        onEventClick(eventId, state.attendee.id)} )
 
                 }
             }

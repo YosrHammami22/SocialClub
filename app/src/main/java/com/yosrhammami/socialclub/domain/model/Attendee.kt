@@ -7,5 +7,6 @@ data class Attendee(
     val age:Int,
     val gender: Gender= Gender.UNKNOWN,
     val prompt: String,
+    val photoUrl: String="",
     val tags: List<String>
 )

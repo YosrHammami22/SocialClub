@@ -13,3 +13,9 @@ sealed interface AttendeeUiState {
     object AttendeeNotFound : AttendeeUiState
     data class Error(val message: String) : AttendeeUiState
 }
+
+sealed interface EventAttendeesUiState {
+    object Loading : EventAttendeesUiState
+    data class Success(val attendees: List<Attendee>) : EventAttendeesUiState
+    data class Error(val message: String) : EventAttendeesUiState
+}

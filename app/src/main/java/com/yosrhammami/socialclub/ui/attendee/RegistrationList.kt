@@ -14,6 +14,7 @@ import com.yosrhammami.socialclub.domain.model.RegistrationWithEvent
 @Composable
 fun RegistrationList(
     registrations: List<RegistrationWithEvent>,
+    onCardClick: (eventId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (registrations.isEmpty()) {
@@ -28,7 +29,7 @@ fun RegistrationList(
         items(
             items = registrations,
             key = {it.registration.id}) {registration ->
-            RegistrationItem(item = registration)
+            RegistrationItem(item = registration, onCardClick = onCardClick)
         }
     }
 }

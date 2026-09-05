@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.ui.attendee
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,7 +28,10 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.formatDate
 
 @Composable
-fun RegistrationItem(item: RegistrationWithEvent) {
+fun RegistrationItem(
+    item: RegistrationWithEvent,
+    onCardClick: (eventId: String) -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -36,6 +40,7 @@ fun RegistrationItem(item: RegistrationWithEvent) {
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
+                .clickable{onCardClick(item.registration.eventId)}
         ) {
             Text(
                 text = item.event?.name ?: "Unknown event",
@@ -58,11 +63,9 @@ fun RegistrationItem(item: RegistrationWithEvent) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = item.event?.date?.let { formatDate(it) } ?: "",
+            Text(text = item.event?.date?.let {formatDate(it)} ?: "",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -113,7 +116,8 @@ fun PreviewRegistrationItemPaid() {
                         date = 1,
                         location = "location Event"
                     )
-                )
+                ),
+                onCardClick = {}
             )
 
         }
@@ -141,7 +145,8 @@ fun PreviewRegistrationItemPending() {
                         date = 1,
                         location = "location Event"
                     )
-                )
+                ),
+                onCardClick = {}
             )
         }
     }

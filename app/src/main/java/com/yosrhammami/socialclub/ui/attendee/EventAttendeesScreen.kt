@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.peopleList
+package com.yosrhammami.socialclub.ui.attendee
 
 
 import androidx.compose.foundation.layout.Box
@@ -17,17 +17,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.Gender
-import com.yosrhammami.socialclub.domain.model.Person
 
 // Stateful — used by MainActivity, connects to the real ViewModel
 @Composable
-fun PeopleListScreen(
-    viewModel: PeopleListViewModel = hiltViewModel(),
+fun EventAttendeesScreen(
+    viewModel: EventAttendeesViewModel = hiltViewModel(),
     onPersonClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    PeopleListContent(
+    EventAttendeesContent(
         uiState = uiState,
         onPersonClick = onPersonClick
     )
@@ -35,12 +35,12 @@ fun PeopleListScreen(
 
 // Stateless — pure UI, takes state as a parameter, no ViewModel/Hilt involved
 @Composable
-fun PeopleListContent(
-    uiState: PeopleListUiState,
+fun EventAttendeesContent(
+    uiState: EventAttendeesUiState,
     onPersonClick: (String) -> Unit
 ) {
     when (uiState) {
-        is PeopleListUiState.Loading -> {
+        is EventAttendeesUiState.Loading -> {
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -49,18 +49,18 @@ fun PeopleListContent(
             }
         }
 
-        is PeopleListUiState.Success -> {
+        is EventAttendeesUiState.Success -> {
             LazyColumn {
-                items(uiState.people) {person ->
-                    PersonListItem(person = person,
-                        onClick = {onPersonClick(person.id)})
+                items(uiState.attendees) {attendee ->
+                    AttendeeListItem(attendee = attendee,
+                        onClick = {onPersonClick(attendee.id)})
                     HorizontalDivider(modifier = Modifier.padding(start = 84.dp))
 
                 }
             }
         }
 
-        is PeopleListUiState.Error -> {
+        is EventAttendeesUiState.Error -> {
             Box(
                 Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -73,47 +73,45 @@ fun PeopleListContent(
 
 @Preview(showBackground = true)
 @Composable
-fun PeopleListLoadingPreview() {
-    PeopleListContent(
-        uiState = PeopleListUiState.Loading,
+fun EventAttendeesLoadingPreview() {
+    EventAttendeesContent(
+        uiState = EventAttendeesUiState.Loading,
         onPersonClick = {})
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PeopleListSuccessPreview() {
+fun AttendeesSuccessPreview() {
     val fakePeople = listOf(
-        Person(
+        Attendee(
             id = "1",
             fullName = "Jane Doe",
             email = "jane@test.com",
-            city = "Paris",
-            country = "France",
             age = 29,
-            photoUrl = "",
+            prompt = "",
+            tags = emptyList(),
             gender = Gender.UNKNOWN
-
         ),
-        Person(
+        Attendee(
             id = "2",
-            fullName = "John Smith",
-            email = "john@test.com",
-            city = "Lyon",
-            country = "France",
-            age = 34,
-            photoUrl = "",
+            fullName = "jack Doe",
+            email = "jack@test.com",
+            age = 29,
+            prompt = "",
+            tags = emptyList(),
             gender = Gender.UNKNOWN
         )
+
     )
-    PeopleListContent(
-        uiState = PeopleListUiState.Success(fakePeople),
+    EventAttendeesContent(
+        uiState = EventAttendeesUiState.Success(fakePeople),
         onPersonClick = {})
 }
 
 @Preview(showBackground = true)
 @Composable
-fun PeopleListErrorPreview() {
-    PeopleListContent(
-        uiState = PeopleListUiState.Error(message = "Network error"),
+fun AttendeeListErrorPreview() {
+    EventAttendeesContent(
+        uiState = EventAttendeesUiState.Error(message = "Network error"),
         onPersonClick = {})
 }

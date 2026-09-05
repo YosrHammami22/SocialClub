@@ -14,4 +14,9 @@ object HomeRoute
 @Serializable
 data class AttendeeRoute(val email: String)
 
+@Serializable
+data class EventAttendeesRoute(
+    val eventId: String,
+    val currentAttendeeId: String)
+
 // existing PeopleListRoute, PersonDetailRoute stay as-is

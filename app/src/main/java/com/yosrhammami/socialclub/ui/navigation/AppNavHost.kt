@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.yosrhammami.socialclub.ui.attendee.AttendeeScreen
+import com.yosrhammami.socialclub.ui.attendee.EventAttendeesScreen
 import com.yosrhammami.socialclub.ui.peopleList.PeopleListScreen
 import com.yosrhammami.socialclub.ui.personDetail.PersonDetailScreen
 
@@ -19,22 +20,30 @@ fun AppNavHost() {
         startDestination = HomeRoute
     ) {
         composable<HomeRoute> {
-            HomeScreen(
-                onValidEmail = { email ->
-                    navController.navigate(AttendeeRoute(email = email)) {
-                        launchSingleTop = true
-                    }
-                },
+            HomeScreen(onValidEmail = {email ->
+                navController.navigate(AttendeeRoute(email = email)) {
+                    launchSingleTop = true
+                }
+            },
                 onGetFromApiClick = {
                     navController.navigate(PeopleListRoute)
-                }
-            )
+                })
         }
         composable<AttendeeRoute> {backStackEntry ->
             val route: AttendeeRoute = backStackEntry.toRoute()
-            AttendeeScreen(email = route.email)
+            AttendeeScreen(email = route.email,
+                onEventClick = {eventId, currentAttendeeId ->
+                    navController.navigate(
+                        EventAttendeesRoute(
+                            eventId = eventId,
+                            currentAttendeeId = currentAttendeeId
+                        )
+                    )
+                })
         }
-
+        composable<EventAttendeesRoute> {
+            EventAttendeesScreen(onPersonClick = {})   // eventId comes automatically via SavedStateHandle
+        }
         composable<PeopleListRoute> {
             PeopleListScreen(onPersonClick = {personId ->
                 navController.navigate(PersonDetailRoute(personId))

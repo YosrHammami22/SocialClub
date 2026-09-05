@@ -8,16 +8,29 @@ import javax.inject.Inject
 class AttendeeRemoteDataSource @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
+
     suspend fun findAttendeeByEmail(email: String): AttendeeDto? {
         val snapshot = firestore.collection("attendees")
-            .whereEqualTo("email", email)
+            .whereEqualTo(
+                "email",
+                email
+            )
             .limit(1)
             .get()
             .await()
 
         val document = snapshot.documents.firstOrNull() ?: return null
-      //  val dto = document.toObject(AttendeeDto::class.java)?.copy(id=document.id) ?: return null
-        val dto = document.toObject(AttendeeDto::class.java)?: return null
+        val dto = document.toObject(AttendeeDto::class.java) ?: return null
         return dto
+    }
+
+    suspend fun getAttendee(personId: String): AttendeeDto? {
+        val snapshot = firestore.collection("attendees")
+            .document(personId)
+            .get()
+            .await()
+
+
+        return snapshot.toObject(AttendeeDto::class.java)
     }
 }

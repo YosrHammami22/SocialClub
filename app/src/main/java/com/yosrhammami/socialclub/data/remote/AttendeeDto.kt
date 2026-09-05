@@ -26,6 +26,7 @@ fun AttendeeDto.toDomain(): Attendee {
             "male" -> Gender.MALE
             "female" -> Gender.FEMALE
             else -> Gender.UNKNOWN
-        }
+        },
+        photoUrl = ""
     )
 }
