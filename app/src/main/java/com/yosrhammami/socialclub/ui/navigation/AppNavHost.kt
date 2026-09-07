@@ -6,8 +6,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.yosrhammami.socialclub.ui.attendee.AttendeeScreen
-import com.yosrhammami.socialclub.ui.attendee.EventAttendeesScreen
+import com.yosrhammami.socialclub.ui.GuestDetail.AttendeeDetailScreen
+import com.yosrhammami.socialclub.ui.currentAttendee.AttendeeScreen
+import com.yosrhammami.socialclub.ui.GuestList.EventAttendeesScreen
 import com.yosrhammami.socialclub.ui.peopleList.PeopleListScreen
 import com.yosrhammami.socialclub.ui.personDetail.PersonDetailScreen
 
@@ -30,20 +31,25 @@ fun AppNavHost() {
                 })
         }
         composable<AttendeeRoute> {backStackEntry ->
-            val route: AttendeeRoute = backStackEntry.toRoute()
-            AttendeeScreen(email = route.email,
-                onEventClick = {eventId, currentAttendeeId ->
+            val route: AttendeeRoute = backStackEntry.toRoute() // needs no backStackEntry.toRoute() thinks to SavedStateHandle
+            AttendeeScreen(
+                onEventClick = {eventId ->
                     navController.navigate(
                         EventAttendeesRoute(
-                            eventId = eventId,
-                            currentAttendeeId = currentAttendeeId
+                            eventId = eventId
                         )
                     )
                 })
         }
         composable<EventAttendeesRoute> {
-            EventAttendeesScreen(onPersonClick = {})   // eventId comes automatically via SavedStateHandle
+            EventAttendeesScreen( onGuestClick = { guestId ->
+                navController.navigate(AttendeeDetailRoute(attendeeId = guestId))
+            })   // eventId comes automatically via SavedStateHandle
         }
+        composable<AttendeeDetailRoute> {
+            AttendeeDetailScreen()
+        }
+
         composable<PeopleListRoute> {
             PeopleListScreen(onPersonClick = {personId ->
                 navController.navigate(PersonDetailRoute(personId))

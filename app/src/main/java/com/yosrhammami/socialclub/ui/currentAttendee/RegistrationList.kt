@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.currentAttendee
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues

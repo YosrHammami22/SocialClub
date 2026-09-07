@@ -5,7 +5,7 @@ import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
 import com.yosrhammami.socialclub.domain.repository.RegistrationRepository
 import javax.inject.Inject
 
-class GetAttendeesForEventUseCase @Inject constructor(
+class GetGuestessForEventUseCase @Inject constructor(
     private val registrationRepository: RegistrationRepository,
     private val attendeeRepository: AttendeeRepository
 )  {

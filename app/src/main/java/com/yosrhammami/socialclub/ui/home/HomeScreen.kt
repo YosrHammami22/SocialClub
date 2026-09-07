@@ -1,4 +1,5 @@
-import androidx.compose.foundation.layout.Arrangement
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -56,8 +58,8 @@ fun HomeContent(
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
+        Spacer(modifier = Modifier.weight(1f))
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChange,
@@ -96,7 +98,26 @@ fun HomeContent(
         ) {
             Text("Get from RandomUser API")
         }
+        Spacer(modifier = Modifier.weight(1f))
+        AboutScreen()
     }
+}
+
+@Composable
+fun AboutScreen(context: Context = LocalContext.current) {
+    val packageInfo = context.packageManager.getPackageInfo(
+        context.packageName,
+        0
+    )
+    val version = packageInfo.versionName
+    val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        packageInfo.longVersionCode
+    }
+    else {
+        packageInfo.versionCode.toLong()
+    }
+
+    Text(text = "Version: $version ($code)")
 }
 
 @Preview(

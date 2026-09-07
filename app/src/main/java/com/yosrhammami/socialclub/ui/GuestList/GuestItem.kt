@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.GuestList
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -18,9 +18,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.yosrhammami.socialclub.domain.model.Person
 import androidx.compose.ui.semantics.semantics
-import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
@@ -28,16 +26,16 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 
 @Composable
-fun AttendeeListItem(
-    attendee: Attendee,
-    onClick: () -> Unit,
+fun GuestItem(
+    guest: Attendee,
+    onGuestClick: (guestAttendeeId: String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val placeholder = attendee.gender.toPlaceholderDrawable()
+    val placeholder = guest.gender.toPlaceholderDrawable()
 
     Row(modifier = modifier
         .fillMaxWidth()
-        .clickable(onClickLabel = "View ${attendee.fullName}'s profile") {onClick()}
+        .clickable {onGuestClick(guest.id)}
         .padding(
             horizontal = 16.dp,
             vertical = 10.dp
@@ -46,7 +44,7 @@ fun AttendeeListItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = attendee.photoUrl,
+            model = guest.photoUrl,
             contentDescription = null,
             placeholder = painterResource(placeholder),
             error = painterResource(placeholder),
@@ -62,12 +60,12 @@ fun AttendeeListItem(
                 .weight(1f)
         ) {
             Text(
-                text = attendee.fullName,
+                text = guest.fullName,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
             )
             Text(
-                text = "${attendee.prompt}",
+                text = "${guest.prompt}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -80,7 +78,7 @@ fun AttendeeListItem(
 fun AttendeeListItemPreview() {
     SocialClubTheme {
         Surface {
-            AttendeeListItem(attendee = Attendee(
+            GuestItem(guest = Attendee(
                 id = "1",
                 fullName = "Jane Doe",
                 email = "jane@test.com",
@@ -90,7 +88,7 @@ fun AttendeeListItemPreview() {
                 prompt = "",
                 tags = emptyList()
             ),
-                onClick = {})
+                onGuestClick = {})
         }
     }
 }

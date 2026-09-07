@@ -1,5 +1,6 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.currentAttendee
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,16 +20,13 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 
 @Composable
 fun AttendeeScreen(
-    email: String,
     viewModel: AttendeeViewModel = hiltViewModel(),
-    onEventClick: (eventId: String,currentAttendeeId: String ) -> Unit
+    onEventClick: (eventId: String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
-        Modifier
-            .fillMaxSize()
-            .padding(top = 24.dp),
+        Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         when (val state = uiState) {
@@ -40,14 +38,14 @@ fun AttendeeScreen(
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .align(Alignment.Center),
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AttendeeBlock(state.attendee)
-
-                    RegistrationList(state.registrations,  onCardClick = {eventId ->
-                        onEventClick(eventId, state.attendee.id)} )
-
+                    RegistrationList(
+                        state.registrations,
+                        onCardClick = onEventClick
+                    )
                 }
             }
 
@@ -56,7 +54,7 @@ fun AttendeeScreen(
             }
 
             is AttendeeUiState.Error -> {
-                Text("Error: ${(uiState as AttendeeUiState.Error).message}")
+                Text("Error: ${state.message}")
             }
         }
     }
@@ -64,7 +62,10 @@ fun AttendeeScreen(
 
 @Composable
 fun AttendeeBlock(attendee: Attendee) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
         Text(
             attendee.fullName,
             style = MaterialTheme.typography.headlineMedium
@@ -73,7 +74,6 @@ fun AttendeeBlock(attendee: Attendee) {
         Text(attendee.prompt)
         Text("Tags: ${attendee.tags.joinToString(", ")}")
     }
-
 }
 
 @ThemePreviews
@@ -83,8 +83,8 @@ fun AttendeeScreenPreviews() {
         id = "id",
         fullName = "fullname",
         email = "email",
+        age = 29,
         prompt = "prompt",
-        age = 18,
         tags = listOf(
             "tag1",
             "tag2"
@@ -92,4 +92,3 @@ fun AttendeeScreenPreviews() {
     )
     AttendeeBlock(attendee)
 }
-

@@ -6,6 +6,9 @@ plugins {
     id("kotlinx-serialization")
     id("com.google.gms.google-services")
 }
+val versionMajor = 1
+val versionMinor = 2
+val versionPatch = 0
 
 android {
     namespace = "com.yosrhammami.socialclub"
@@ -15,8 +18,8 @@ android {
         applicationId = "com.yosrhammami.socialclub"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMajor.$versionMinor.$versionPatch"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

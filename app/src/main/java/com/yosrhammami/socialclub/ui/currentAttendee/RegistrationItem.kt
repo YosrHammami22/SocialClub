@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.currentAttendee
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

@@ -1,8 +1,9 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.currentAttendee
 
 import androidx.lifecycle.SavedStateHandle
 import com.yosrhammami.socialclub.FakeLogger
 import com.yosrhammami.socialclub.MainDispatcherRule
+import com.yosrhammami.socialclub.data.session.SessionManager
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.AttendeeWithRegistrationsResult
 import com.yosrhammami.socialclub.domain.model.Event
@@ -25,9 +26,10 @@ class AttendeeViewModelTest{
     private val fakeRepository = mockk<AttendeeRepository>()
     private val fakeUseCase = mockk<GetAttendeeWithRegistrationsUseCase>()
     private val fakeLogger = FakeLogger()
+    private val fakeSession = mockk<SessionManager>()
     private fun createViewModel(email: String = "jane@test.com"): AttendeeViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("email" to email))
-        return AttendeeViewModel(fakeUseCase, fakeLogger, savedStateHandle)
+        return AttendeeViewModel(getAttendeeWithRegistrationsUseCase=fakeUseCase,sessionManager=fakeSession, logger=fakeLogger, savedStateHandle)
     }
     private val registration= Registration(
         id = "r1",

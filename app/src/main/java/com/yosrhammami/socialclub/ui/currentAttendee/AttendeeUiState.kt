@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.attendee
+package com.yosrhammami.socialclub.ui.currentAttendee
 
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.RegistrationWithEvent
@@ -12,10 +12,4 @@ sealed interface AttendeeUiState {
     ) : AttendeeUiState
     object AttendeeNotFound : AttendeeUiState
     data class Error(val message: String) : AttendeeUiState
-}
-
-sealed interface EventAttendeesUiState {
-    object Loading : EventAttendeesUiState
-    data class Success(val attendees: List<Attendee>) : EventAttendeesUiState
-    data class Error(val message: String) : EventAttendeesUiState
 }
