@@ -35,6 +35,7 @@ import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.ui.personDetail.uiState.IcebreakerUiState
 import com.yosrhammami.socialclub.ui.personDetail.uiState.PersonDetailUiState
+import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 import androidx.compose.foundation.layout.Row as Row1
@@ -205,19 +206,19 @@ fun IcebreakerContent(
 @ThemePreviews
 @Composable
 fun PersonDetailSuccessPreview() {
-    val person = Person(
-        id = "id",
-        fullName = "Jane Doe",
-        email = "jane@test.com",
-        city = "Paris",
-        country = "France",
-        age = 29,
-        photoUrl = "https://randomuser.me/api/portraits/women/44.jpg"
-    )
-    PersonDetailContentSuccess(
-        person,
-        IcebreakerUiState.Idle,
-        onGenerateIcebreakerClick = {}
-    )
+    SocialClubTheme {
+        val person = Person(
+            id = "id",
+            fullName = "Jane Doe",
+            email = "jane@test.com",
+            city = "Paris",
+            country = "France",
+            age = 29,
+            photoUrl = "https://randomuser.me/api/portraits/women/44.jpg"
+        )
+        PersonDetailContentSuccess(person,
+            IcebreakerUiState.Idle,
+            onGenerateIcebreakerClick = {})
 
+    }
 }

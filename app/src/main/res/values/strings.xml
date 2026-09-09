@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">SocialClub</string>
-    <string name="enter_email">Enter your email</string>
+    <string name="home_email_label">Enter your email</string>
     <string name="find_registration">Find my registration</string>
     <string name="get_from_api">Get from RandomUser API</string>
+    <string name="email_label">Get from RandomUser API</string>
+    <string name="home_find_registration_button">home_find_registration_button</string>
 </resources>
