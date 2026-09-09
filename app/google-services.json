@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "873798308525",
+    "project_id": "socialclub-f79e3",
+    "storage_bucket": "socialclub-f79e3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873798308525:android:587df611a76464c1d02c24",
+        "android_client_info": {
+          "package_name": "com.yosrhammami.socialclub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgZUXBHSd9SPSzpv-YcoGG6gcMuQElFB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

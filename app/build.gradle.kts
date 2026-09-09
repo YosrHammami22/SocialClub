@@ -4,7 +4,11 @@ plugins {
     alias(libs.plugins.hilt.android) // 1. Apply the Hilt Plugin
     id("kotlin-kapt")               // 2. Apply KAPT (required for Hilt)
     id("kotlinx-serialization")
+    id("com.google.gms.google-services")
 }
+val versionMajor = 1
+val versionMinor = 2
+val versionPatch = 0
 
 android {
     namespace = "com.yosrhammami.socialclub"
@@ -14,8 +18,8 @@ android {
         applicationId = "com.yosrhammami.socialclub"
         minSdk = 24
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
+        versionName = "$versionMajor.$versionMinor.$versionPatch"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -78,7 +82,13 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // handle image
     implementation(libs.coil.compose)
-
+    // Import the BoM using the catalog reference
+    implementation(platform(libs.firebase.bom))
+    // Import Kotlin  coroutines-Play-Services bridge
+    implementation(libs.kotlinx.coroutines.play.services)
+    // Add Firestore and Auth (versions are managed by the BoM)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -88,5 +98,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(libs.turbine)
     testImplementation(libs.kotlinx.coroutines.test)
-
+    testImplementation(libs.mockk)
 }

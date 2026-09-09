@@ -1,8 +1,3 @@
-# So_Social
-
-An Android app for browsing and viewing profiles, built as focused practice for
-Clean Architecture, testable code, and modern Android tooling — including a
-generative AI feature.
 
 ## Architecture
 - Clean Architecture (data / domain / presentation layers)
