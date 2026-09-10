@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.GuestDetail
+package com.yosrhammami.socialclub.ui.guestDetail
 
 import com.yosrhammami.socialclub.domain.model.Attendee
 

@@ -6,9 +6,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.yosrhammami.socialclub.ui.GuestDetail.AttendeeDetailScreen
+import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
 import com.yosrhammami.socialclub.ui.currentAttendee.AttendeeScreen
-import com.yosrhammami.socialclub.ui.GuestList.EventAttendeesScreen
+import com.yosrhammami.socialclub.ui.guestList.EventAttendeesScreen
 import com.yosrhammami.socialclub.ui.peopleList.PeopleListScreen
 import com.yosrhammami.socialclub.ui.personDetail.PersonDetailScreen
 

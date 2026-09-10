@@ -3,7 +3,9 @@ package com.yosrhammami.socialclub.ui.currentAttendee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -12,11 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Attendee
+import com.yosrhammami.socialclub.ui.components.AppAvatar
+import com.yosrhammami.socialclub.ui.components.BodyText
+import com.yosrhammami.socialclub.ui.components.ErrorText
+import com.yosrhammami.socialclub.ui.components.TitleText
+import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
+import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 
 @Composable
 fun AttendeeScreen(
@@ -26,7 +37,7 @@ fun AttendeeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
-        Modifier.fillMaxSize(),
+        Modifier.fillMaxSize().padding(top=Spacing.xxl),
         contentAlignment = Alignment.Center
     ) {
         when (val state = uiState) {
@@ -38,10 +49,8 @@ fun AttendeeScreen(
                 Column(
                     Modifier
                         .fillMaxSize()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    AttendeeBlock(state.attendee)
+                    AttendeeHeader(state.attendee)
                     RegistrationList(
                         state.registrations,
                         onCardClick = onEventClick
@@ -50,38 +59,35 @@ fun AttendeeScreen(
             }
 
             is AttendeeUiState.AttendeeNotFound -> {
-                Text("We couldn't find an attendee with this email.")
+                BodyText(stringResource(R.string.attendee_not_found))
             }
 
             is AttendeeUiState.Error -> {
-                Text("Error: ${state.message}")
+                ErrorText("Error: ${state.message}")
             }
         }
     }
 }
-
 @Composable
-fun AttendeeBlock(attendee: Attendee) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+fun AttendeeHeader(attendee: Attendee) {
+    val placeholder = attendee.gender.toPlaceholderDrawable()
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            attendee.fullName,
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Text(attendee.email)
-        Text(attendee.prompt)
-        Text("Tags: ${attendee.tags.joinToString(", ")}")
+        TitleText(text = "Hello, ${attendee.fullName.substringBefore(" ")}")
+        AppAvatar(name = attendee.fullName, placeholder= placeholder)
     }
 }
+
 
 @ThemePreviews
 @Composable
 fun AttendeeScreenPreviews() {
     val attendee = Attendee(
         id = "id",
-        fullName = "fullname",
+        fullName = "Jane ",
         email = "email",
         age = 29,
         prompt = "prompt",
@@ -90,5 +96,5 @@ fun AttendeeScreenPreviews() {
             "tag2"
         )
     )
-    AttendeeBlock(attendee)
+    AttendeeHeader(attendee)
 }

@@ -4,5 +4,9 @@
     <string name="find_registration">Find my registration</string>
     <string name="get_from_api">Get from RandomUser API</string>
     <string name="email_label">Get from RandomUser API</string>
-    <string name="home_find_registration_button">home_find_registration_button</string>
+    <string name="home_find_registration_button">home find registration button</string>
+    <string name="unknown_event">Unknown event</string>
+    <string name="unknown_location">Unknown location</string>
+    <string name="no_registrations_found">No registrations found.</string>
+    <string name="attendee_not_found">We couldn\'t find an attendee with this email.</string>
 </resources>

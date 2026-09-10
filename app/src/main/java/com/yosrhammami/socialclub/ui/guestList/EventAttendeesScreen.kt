@@ -1,7 +1,8 @@
-package com.yosrhammami.socialclub.ui.GuestList
+package com.yosrhammami.socialclub.ui.guestList
 
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.Gender
+import com.yosrhammami.socialclub.ui.components.CaptionText
+import com.yosrhammami.socialclub.ui.components.ErrorText
+import com.yosrhammami.socialclub.ui.theme.Spacing
 
 // Stateful — used by MainActivity, connects to the real ViewModel
 @Composable
@@ -28,17 +32,12 @@ fun EventAttendeesScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
         EventAttendeesContent(
             uiState = uiState,
             onGuestClick = onGuestClick,
             modifier = modifier.fillMaxSize()
         )
-    }
+
 }
 
 // Stateless — pure UI, takes state as a parameter, no ViewModel/Hilt involved
@@ -63,26 +62,33 @@ fun EventAttendeesContent(
             }
 
             is EventAttendeesUiState.Success -> {
-                if (state.guestAttendees.isEmpty()) {
-                    Box(
-                        Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No other guests registered yet.")
-                    }
-                }
-            else{
+                Column(modifier.fillMaxSize().padding(top= Spacing.xxl)) {
+                    EventHeader(
+                        eventName = state.eventName,   // see note below
 
-                    LazyColumn(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
-                        items(
-                            items = state.guestAttendees,
-                            key = {it.id}) {guest ->
-                            GuestItem(guest, onGuestClick = {onGuestClick(guest.id)})
-                            HorizontalDivider()
+                    )
+                    HorizontalDivider()
+                    if (state.guestAttendees.isEmpty()) {
+                        Box(
+                            Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CaptionText("No other guests registered yet.")
+                        }
+                    }
+                    else {
+
+                        LazyColumn(
+                            Modifier.fillMaxSize()
+
+                        ) {
+                            items(items = state.guestAttendees,
+                                key = {it.id}) {guest ->
+                                GuestItem(
+                                    guest,
+                                    onGuestClick = {onGuestClick(guest.id)})
+                                HorizontalDivider(modifier = Modifier.padding(start = 84.dp))
+                            }
                         }
                     }
                 }
@@ -93,7 +99,7 @@ fun EventAttendeesContent(
                     Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Error: ${state.message}")
+                    ErrorText(text = "Error: ${state.message}")
                 }
             }
         }
@@ -132,7 +138,7 @@ fun AttendeesSuccessPreview() {
         )
 
     )
-    EventAttendeesContent(uiState = EventAttendeesUiState.Success(fakePeople),
+    EventAttendeesContent(uiState = EventAttendeesUiState.Success("Event Name",fakePeople),
         onGuestClick = {})
 }
 

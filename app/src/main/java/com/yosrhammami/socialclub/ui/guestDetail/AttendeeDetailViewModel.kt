@@ -1,4 +1,4 @@
-package com.yosrhammami.socialclub.ui.GuestDetail
+package com.yosrhammami.socialclub.ui.guestDetail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -22,6 +21,7 @@ import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
 import com.yosrhammami.socialclub.ui.components.AppSecondaryButton
 import com.yosrhammami.socialclub.ui.components.AppTextField
+import com.yosrhammami.socialclub.ui.components.CaptionText
 import com.yosrhammami.socialclub.ui.home.HomeViewModel
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
@@ -106,8 +106,7 @@ fun AboutScreen(context: Context = LocalContext.current) {
     else {
         packageInfo.versionCode.toLong()
     }
-
-    Text(text = "Version: $version ($code)")
+    CaptionText(  text = "Version $version ($code)",)
 }
 
 @ThemePreviews
