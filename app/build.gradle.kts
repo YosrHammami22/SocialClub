@@ -1,10 +1,13 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.hilt.android) // 1. Apply the Hilt Plugin
-    id("kotlin-kapt")               // 2. Apply KAPT (required for Hilt)
+    alias(libs.plugins.legacy.kapt)
+    // 2. Apply KAPT (required for Hilt)
     id("kotlinx-serialization")
     id("com.google.gms.google-services")
+    alias(libs.plugins.kotlin.compose)
 }
 val versionMajor = 1
 val versionMinor = 3
@@ -12,7 +15,7 @@ val versionPatch = 0
 
 android {
     namespace = "com.yosrhammami.socialclub"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.yosrhammami.socialclub"
@@ -37,18 +40,13 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
         resources {
@@ -56,7 +54,11 @@ android {
         }
     }
 }
-
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
+}
 
 dependencies {
 
@@ -83,7 +85,7 @@ dependencies {
     // handle image
     implementation(libs.coil.compose)
     // Import the BoM using the catalog reference
-    implementation(platform(libs.firebase.bom))
+    implementation(platform(libs.firebase.bom)) // 1. Add the BOM dependency works perfectly with every version of compose.material3.
     // Import Kotlin  coroutines-Play-Services bridge
     implementation(libs.kotlinx.coroutines.play.services)
     // Add Firestore and Auth (versions are managed by the BoM)
@@ -92,7 +94,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
