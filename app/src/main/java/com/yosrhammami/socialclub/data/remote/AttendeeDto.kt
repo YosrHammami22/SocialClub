@@ -6,7 +6,8 @@ import com.yosrhammami.socialclub.domain.model.Gender
 
 data class AttendeeDto(
     @DocumentId val id: String="",
-    val fullName: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
     val email: String = "",
     val gender: String?=null,
     val age: Int = 0,
@@ -17,7 +18,7 @@ data class AttendeeDto(
 fun AttendeeDto.toDomain(): Attendee {
     return Attendee(
         id = id,
-        fullName = fullName,
+        fullName = "$firstName $lastName",
         email = email,
         prompt = prompt,
         tags = tags,

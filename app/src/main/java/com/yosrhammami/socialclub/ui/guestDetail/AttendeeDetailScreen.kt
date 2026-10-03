@@ -77,7 +77,7 @@ fun AttendeeDetailContent(uiState: AttendeeDetailUiState) {
 
                     Spacer(Modifier.height(Spacing.xs))
 
-                    CaptionText(text = state.guestAttendee.email)
+                    // CaptionText(text = state.guestAttendee.email)
 
                     Spacer(Modifier.height(Spacing.lg))
 
