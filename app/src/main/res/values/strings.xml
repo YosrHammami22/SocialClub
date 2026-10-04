@@ -9,4 +9,11 @@
     <string name="unknown_location">Unknown location</string>
     <string name="no_registrations_found">No registrations found.</string>
     <string name="attendee_not_found">We couldn\'t find an attendee with this email.</string>
+
+    <!-- Contact Request Button Labels -->
+    <string name="contact_request_send">Send Request</string>
+    <string name="contact_request_pending">Pending</string>
+    <string name="contact_request_confirm">Confirm</string>
+    <string name="contact_request_accepted">Accepted</string>
+    <string name="contact_request_delete">Declined</string>
 </resources>

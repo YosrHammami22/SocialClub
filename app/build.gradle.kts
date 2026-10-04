@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 val versionMajor = 1
-val versionMinor = 3
+val versionMinor = 4
 val versionPatch = 0
 
 android {
@@ -94,6 +94,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)

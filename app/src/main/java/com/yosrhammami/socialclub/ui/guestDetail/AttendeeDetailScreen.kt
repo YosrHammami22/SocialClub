@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.ui.guestDetail
 
+import android.widget.Toast
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,15 +18,21 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.domain.model.Attendee
+import com.yosrhammami.socialclub.domain.model.ContactRequestButtonState
 import com.yosrhammami.socialclub.ui.components.AppAvatar
+import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
+import com.yosrhammami.socialclub.ui.components.AppSecondaryButton
 import com.yosrhammami.socialclub.ui.components.BodyText
 import com.yosrhammami.socialclub.ui.components.CaptionText
 import com.yosrhammami.socialclub.ui.components.ErrorText
@@ -34,21 +41,32 @@ import com.yosrhammami.socialclub.ui.components.TitleText
 import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
+import com.yosrhammami.socialclub.R
 
 // Stateful — used by navigation, connects to the real ViewModel
 @Composable
 fun AttendeeDetailScreen(viewModel: AttendeeDetailViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    AttendeeDetailContent(uiState = uiState)
+    val context = LocalContext.current
+    LaunchedEffect(Unit) { viewModel.errorEvent.collect { message ->
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }}
+    AttendeeDetailContent(uiState = uiState,onClick=viewModel::onSendRequestClick)
 }
 
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
 @Composable
-fun AttendeeDetailContent(uiState: AttendeeDetailUiState) {
-    Crossfade(targetState = uiState, label = "guest detail") { state ->
+fun AttendeeDetailContent(uiState: AttendeeDetailUiState, onClick:()->Unit) {
+    Crossfade(
+        targetState = uiState,
+        label = "guest detail"
+    ) {state ->
         when (state) {
             is AttendeeDetailUiState.Loading -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
@@ -100,23 +118,35 @@ fun AttendeeDetailContent(uiState: AttendeeDetailUiState) {
                             TagRow(tags = state.guestAttendee.tags)
                         }
                     }
+
+                    Spacer(Modifier.height(Spacing.lg))
+                    ContactActionButtons(contactButtonState = state.contactButtonState,onClick=onClick)
                 }
             }
 
             is AttendeeDetailUiState.Error -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     ErrorText(state.message)
                 }
             }
 
             AttendeeDetailUiState.AttendeeNotFound -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     BodyText("Attendee not found")
                 }
             }
 
             AttendeeDetailUiState.Idle -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
@@ -128,7 +158,7 @@ fun AttendeeDetailContent(uiState: AttendeeDetailUiState) {
 @Composable
 private fun TagRow(tags: List<String>) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        tags.forEach { tag ->
+        tags.forEach {tag ->
             Surface(
                 shape = RoundedCornerShape(50),
                 color = MaterialTheme.colorScheme.secondaryContainer
@@ -136,13 +166,62 @@ private fun TagRow(tags: List<String>) {
                 CaptionText(
                     text = tag,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    modifier = Modifier.padding(horizontal = Spacing.sm, vertical = 4.dp)
+                    modifier = Modifier.padding(
+                        horizontal = Spacing.sm,
+                        vertical = 4.dp
+                    )
                 )
             }
         }
     }
 }
+@Composable
+private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,onClick:()->Unit) {
+    when (contactButtonState) {
+        ContactRequestButtonState.NoRequest -> {
+            AppPrimaryButton(
+                text = stringResource(id = R.string.contact_request_send),
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
+        ContactRequestButtonState.PendingSender -> {
+            AppPrimaryButton(
+                text = stringResource(id = R.string.contact_request_pending),
+                onClick = onClick,
+                enabled = false,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        ContactRequestButtonState.PendingReceiver -> {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                AppPrimaryButton(
+                    text = stringResource(id = R.string.contact_request_confirm),
+                    onClick = {/*todo  */},
+                    modifier = Modifier.fillMaxWidth()
+                )
+                AppSecondaryButton(
+                    text = stringResource(id = R.string.contact_request_delete),
+                    onClick = { /*todo*/ },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        ContactRequestButtonState.Accepted -> {
+            BodyText(text = stringResource(id = R.string.contact_request_accepted))
+        }
+
+        ContactRequestButtonState.Unknown, ContactRequestButtonState.Declined -> {
+            // nothing shown
+        }
+    }
+}
 // ---------- Previews ----------
 
 @ThemePreviews
@@ -158,16 +237,24 @@ fun AttendeeDetailSuccessPreview() {
                         email = "jane@test.com",
                         photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
                         prompt = "Android developer who loves hiking, board games, and building side projects on weekends.",
-                        tags = listOf("android", "hiking", "boardgames", "kotlin"),
-                        age=22
-                    )
-                )
+                        tags = listOf(
+                            "android",
+                            "hiking",
+                            "boardgames",
+                            "kotlin"
+                        ),
+                        age = 22
+                    ),
+                    contactButtonState = ContactRequestButtonState.NoRequest
+                ),
+                onClick = {}
             )
         }
     }
 }
 
 @ThemePreviews
+
 @Composable
 fun AttendeeDetailNoTagsPreview() {
     SocialClubTheme(dynamicColor = false) {
@@ -179,42 +266,47 @@ fun AttendeeDetailNoTagsPreview() {
                         fullName = "John Smith",
                         email = "john@test.com",
                         photoUrl = "",
-                        age=22,
+                        age = 22,
                         prompt = "New here, excited to meet people!",
                         tags = emptyList()
-                    )
-                )
+                    ),
+                    contactButtonState = ContactRequestButtonState.PendingReceiver
+                ),
+                onClick = {}
             )
         }
     }
 }
 
 @ThemePreviews
+
 @Composable
 fun AttendeeDetailLoadingPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading)
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onClick = {})
         }
     }
 }
 
 @ThemePreviews
+
 @Composable
 fun AttendeeDetailErrorPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"))
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"),onClick = {})
         }
     }
 }
 
 @ThemePreviews
+
 @Composable
 fun AttendeeDetailNotFoundPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.AttendeeNotFound)
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.AttendeeNotFound, onClick = {})
         }
     }
 }
