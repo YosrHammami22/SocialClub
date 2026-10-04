@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.yosrhammami.socialclub.core.util.Logger
 import com.yosrhammami.socialclub.data.session.SessionManager
 import com.yosrhammami.socialclub.domain.model.ContactRequestButtonState
+import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import com.yosrhammami.socialclub.domain.usecase.GetAttendeeUseCase
 import com.yosrhammami.socialclub.domain.usecase.GetContactRequestStateUseCase
 import com.yosrhammami.socialclub.domain.usecase.SendContactRequestUseCase
+import com.yosrhammami.socialclub.domain.usecase.UpdateContactRequestStatusUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +25,7 @@ class AttendeeDetailViewModel @Inject constructor(
     private val getAttendeeUseCase: GetAttendeeUseCase,
     private val getContactRequestStateUseCase: GetContactRequestStateUseCase,
     private val sendContactRequestUseCase: SendContactRequestUseCase,
+    private val updateContactRequestUseCase: UpdateContactRequestStatusUseCase,
     private val sessionManager: SessionManager,
     private val logger: Logger,
     savedStateHandle: SavedStateHandle
@@ -93,6 +96,21 @@ class AttendeeDetailViewModel @Inject constructor(
 
         }
 
+    }
+
+    fun updateContactRequest(status: ContactRequestStatus){
+        viewModelScope.launch {
+            val currentAttendeeId = sessionManager.currentAttendee.value?.id ?: return@launch
+            updateContactRequestUseCase(
+                currentAttendeeId,
+                guestAttendeeId,
+                status=status
+            ).onFailure {
+                logger.e("Error update contact request", it)
+                _errorEvent.tryEmit("No internet connection") /* tryEmit() is the non-suspend version of emit(). It tries to send the value immediately and returns true/false whether it worked — it doesn't pause the coroutine.*/
+            }
+
+        }
     }
 
 }

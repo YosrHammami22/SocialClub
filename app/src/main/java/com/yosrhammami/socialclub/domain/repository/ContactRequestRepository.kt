@@ -1,6 +1,7 @@
 package com.yosrhammami.socialclub.domain.repository
 
 import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import kotlinx.coroutines.flow.Flow
 /*
 suspend means: "this function does work and waits, then gives one result." It pauses until finished.
@@ -15,5 +16,6 @@ Function returning X directly (one real value) → needs suspend.
 interface ContactRequestRepository {
 
     suspend fun send(request: ContactRequest): Result<Unit>
-    fun observeContactRequest(fromAttendeeId: String, toAttendeeId: String): Flow<ContactRequest?> //
+    fun observeContactRequest(fromAttendeeId: String, toAttendeeId: String): Flow<ContactRequest?>
+    suspend fun updateContactRequest(fromAttendeeId: String, toAttendeeId: String,status: ContactRequestStatus):Result<Unit>
 }

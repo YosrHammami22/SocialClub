@@ -42,6 +42,7 @@ import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.R
+import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 
 // Stateful — used by navigation, connects to the real ViewModel
 @Composable
@@ -51,12 +52,16 @@ fun AttendeeDetailScreen(viewModel: AttendeeDetailViewModel = hiltViewModel()) {
     LaunchedEffect(Unit) { viewModel.errorEvent.collect { message ->
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }}
-    AttendeeDetailContent(uiState = uiState,onClick=viewModel::onSendRequestClick)
+    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest)
 }
 
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
 @Composable
-fun AttendeeDetailContent(uiState: AttendeeDetailUiState, onClick:()->Unit) {
+fun AttendeeDetailContent(
+    uiState: AttendeeDetailUiState,
+    onSendRequestClick: () -> Unit,
+    onRespondToRequest: (ContactRequestStatus) -> Unit
+) {
     Crossfade(
         targetState = uiState,
         label = "guest detail"
@@ -120,7 +125,7 @@ fun AttendeeDetailContent(uiState: AttendeeDetailUiState, onClick:()->Unit) {
                     }
 
                     Spacer(Modifier.height(Spacing.lg))
-                    ContactActionButtons(contactButtonState = state.contactButtonState,onClick=onClick)
+                    ContactActionButtons(contactButtonState = state.contactButtonState,onClick=onSendRequestClick,onClickListener=onRespondToRequest)
                 }
             }
 
@@ -176,7 +181,7 @@ private fun TagRow(tags: List<String>) {
     }
 }
 @Composable
-private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,onClick:()->Unit) {
+private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,onClick:()->Unit, onClickListener: (ContactRequestStatus) -> Unit) {
     when (contactButtonState) {
         ContactRequestButtonState.NoRequest -> {
             AppPrimaryButton(
@@ -202,12 +207,12 @@ private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,o
             ) {
                 AppPrimaryButton(
                     text = stringResource(id = R.string.contact_request_confirm),
-                    onClick = {/*todo  */},
+                    onClick = {onClickListener(ContactRequestStatus.ACCEPTED)},
                     modifier = Modifier.fillMaxWidth()
                 )
                 AppSecondaryButton(
                     text = stringResource(id = R.string.contact_request_delete),
-                    onClick = { /*todo*/ },
+                    onClick = { onClickListener(ContactRequestStatus.DECLINED) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -247,7 +252,8 @@ fun AttendeeDetailSuccessPreview() {
                     ),
                     contactButtonState = ContactRequestButtonState.NoRequest
                 ),
-                onClick = {}
+                onSendRequestClick = {},
+                onRespondToRequest = {}
             )
         }
     }
@@ -272,7 +278,8 @@ fun AttendeeDetailNoTagsPreview() {
                     ),
                     contactButtonState = ContactRequestButtonState.PendingReceiver
                 ),
-                onClick = {}
+                onSendRequestClick = {},
+                onRespondToRequest = {}
             )
         }
     }
@@ -284,7 +291,7 @@ fun AttendeeDetailNoTagsPreview() {
 fun AttendeeDetailLoadingPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onClick = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {})
         }
     }
 }
@@ -295,7 +302,7 @@ fun AttendeeDetailLoadingPreview() {
 fun AttendeeDetailErrorPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"),onClick = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {})
         }
     }
 }
@@ -306,7 +313,11 @@ fun AttendeeDetailErrorPreview() {
 fun AttendeeDetailNotFoundPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.AttendeeNotFound, onClick = {})
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.AttendeeNotFound,
+                onSendRequestClick = {},
+                onRespondToRequest = {}
+            )
         }
     }
 }
