@@ -5,11 +5,11 @@ import com.yosrhammami.socialclub.domain.model.ContactRequest
 import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 
 data class ContactRequestDto(
-    @DocumentId  val id: String,
-    val senderId: String,
-    val receiverId: String,
-    val status: String,
-    val createdAt: Long)
+    @DocumentId val id: String = "",
+    val senderId: String = "",
+    val receiverId: String = "",
+    val status: String = "",
+    val createdAt: Long = 0L)
 
     fun ContactRequestDto.toDomain(): ContactRequest {
         return ContactRequest(

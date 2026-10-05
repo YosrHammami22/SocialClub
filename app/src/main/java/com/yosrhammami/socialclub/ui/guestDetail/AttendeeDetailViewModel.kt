@@ -91,7 +91,7 @@ class AttendeeDetailViewModel @Inject constructor(
                 guestAttendeeId
             ).onFailure {
                 logger.e("Error sending contact request", it)
-                _errorEvent.tryEmit("No internet connection") /* tryEmit() is the non-suspend version of emit(). It tries to send the value immediately and returns true/false whether it worked — it doesn't pause the coroutine.*/
+                _errorEvent.tryEmit("Error sending contact request ${it.message}") /* tryEmit() is the non-suspend version of emit(). It tries to send the value immediately and returns true/false whether it worked — it doesn't pause the coroutine.*/
                 }
 
         }
@@ -107,7 +107,7 @@ class AttendeeDetailViewModel @Inject constructor(
                 status=status
             ).onFailure {
                 logger.e("Error update contact request", it)
-                _errorEvent.tryEmit("No internet connection") /* tryEmit() is the non-suspend version of emit(). It tries to send the value immediately and returns true/false whether it worked — it doesn't pause the coroutine.*/
+                _errorEvent.tryEmit("Error update contact request ${it.message}") /* tryEmit() is the non-suspend version of emit(). It tries to send the value immediately and returns true/false whether it worked — it doesn't pause the coroutine.*/
             }
 
         }
