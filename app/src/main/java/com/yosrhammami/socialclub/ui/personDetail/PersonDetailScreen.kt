@@ -10,13 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,13 +34,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import coil.compose.AsyncImage
 import com.yosrhammami.socialclub.R
+import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.ui.personDetail.uiState.IcebreakerUiState
 import com.yosrhammami.socialclub.ui.personDetail.uiState.PersonDetailUiState
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
+import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
-import androidx.compose.foundation.layout.Row as Row1
 
 @Composable
 fun PersonDetailScreen(
@@ -106,14 +109,21 @@ fun PersonDetailContentSuccess(
 ) {
     val context = LocalContext.current
     val placeholder = person.gender.toPlaceholderDrawable()
+    // Top-anchored, not vertically centered: with Arrangement.Center the whole block is
+    // re-centered every time the icebreaker result changes the content height, which made
+    // the avatar jump. Anchoring from the top keeps it fixed and lets the result grow downward.
+    // verticalScroll goes before padding so the padding scrolls with the content.
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
 
     ) {
+        Spacer(Modifier.height(Spacing.xxl))
+
         AsyncImage(
             model = person.photoUrl,
             contentDescription = null,
@@ -138,10 +148,12 @@ fun PersonDetailContentSuccess(
         )
 
         Spacer(Modifier.height(20.dp))
-        Row1(
+        // Column, not Row: IcebreakerContent emits its button and then a spinner/text/error
+        // as siblings, so the parent's axis decides where the result lands. In a Row it sat
+        // beside the button and its height-based Spacers did nothing.
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center, // Centers the pair in the middle of the screen
-            verticalAlignment = Alignment.CenterVertically // Aligns them nicely if they have different sizes
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             IconButton(onClick = {
                 Toast.makeText(
@@ -160,7 +172,7 @@ fun PersonDetailContentSuccess(
             }
 
             // Add spacing between the buttons
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.height(Spacing.sm))
             IcebreakerContent(uiState = icebreakerState, onGenerateIcebreakerClick = onGenerateIcebreakerClick)
         }
     }
@@ -203,22 +215,102 @@ fun IcebreakerContent(
     }
 }
 
+// ---------- Previews ----------
+
+// One shared sample so every preview shows the same person and only the state under test varies.
+private val previewPerson = Person(
+    id = "1",
+    fullName = "Jane Doe",
+    email = "jane@test.com",
+    city = "Paris",
+    country = "France",
+    age = 29,
+    photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
+    gender = Gender.FEMALE
+)
+
 @ThemePreviews
 @Composable
 fun PersonDetailSuccessPreview() {
-    SocialClubTheme {
-        val person = Person(
-            id = "id",
-            fullName = "Jane Doe",
-            email = "jane@test.com",
-            city = "Paris",
-            country = "France",
-            age = 29,
-            photoUrl = "https://randomuser.me/api/portraits/women/44.jpg"
-        )
-        PersonDetailContentSuccess(person,
-            IcebreakerUiState.Idle,
-            onGenerateIcebreakerClick = {})
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Success(previewPerson),
+                icebreakerState = IcebreakerUiState.Idle,
+                onGenerateIcebreakerClick = {}
+            )
+        }
+    }
+}
 
+@ThemePreviews
+@Composable
+fun PersonDetailIcebreakerLoadingPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Success(previewPerson),
+                icebreakerState = IcebreakerUiState.Loading,
+                onGenerateIcebreakerClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PersonDetailIcebreakerSuccessPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Success(previewPerson),
+                icebreakerState = IcebreakerUiState.Success(
+                    "Ask Jane which Paris neighbourhood she'd send a first-time visitor to, and why."
+                ),
+                onGenerateIcebreakerClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PersonDetailIcebreakerErrorPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Success(previewPerson),
+                icebreakerState = IcebreakerUiState.Error("Network error"),
+                onGenerateIcebreakerClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PersonDetailLoadingPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Loading,
+                icebreakerState = IcebreakerUiState.Idle,
+                onGenerateIcebreakerClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PersonDetailErrorPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            PersonDetailContent(
+                uiState = PersonDetailUiState.Error("Network error"),
+                icebreakerState = IcebreakerUiState.Idle,
+                onGenerateIcebreakerClick = {}
+            )
+        }
     }
 }
