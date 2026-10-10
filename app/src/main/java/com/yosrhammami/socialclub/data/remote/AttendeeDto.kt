@@ -9,6 +9,8 @@ data class AttendeeDto(
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",
+    // Empty until the attendee completes their first connection (Firebase Auth account created).
+    val authUid: String = "",
     val gender: String?=null,
     val age: Int = 0,
     val prompt: String = "",
@@ -20,6 +22,7 @@ fun AttendeeDto.toDomain(): Attendee {
         id = id,
         fullName = "$firstName $lastName",
         email = email,
+        authUid = authUid,
         prompt = prompt,
         tags = tags,
         age = age,

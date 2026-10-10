@@ -10,6 +10,14 @@
     <string name="no_registrations_found">No registrations found.</string>
     <string name="attendee_not_found">We couldn\'t find an attendee with this email.</string>
 
+    <!-- Create password (first connection) -->
+    <string name="create_password_title">Create your password</string>
+    <string name="create_password_subtitle">First time here? Choose a password for %1$s.</string>
+    <string name="create_password_label">Password</string>
+    <string name="create_password_confirm_label">Confirm password</string>
+    <string name="create_password_hint">At least 8 characters.</string>
+    <string name="create_password_button">Create my account</string>
+
     <!-- Contact Request Button Labels -->
     <string name="contact_request_send">Send Request</string>
     <string name="contact_request_pending">Pending</string>

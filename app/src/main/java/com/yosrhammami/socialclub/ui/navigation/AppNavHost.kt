@@ -6,6 +6,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.yosrhammami.socialclub.ui.createPassword.CreatePasswordScreen
 import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
 import com.yosrhammami.socialclub.ui.currentAttendee.AttendeeScreen
 import com.yosrhammami.socialclub.ui.guestList.EventAttendeesScreen
@@ -26,6 +27,11 @@ fun AppNavHost() {
                     launchSingleTop = true
                 }
             },
+                onFirstConnection = {attendeeId, email ->
+                    navController.navigate(CreatePasswordRoute(attendeeId = attendeeId, email = email)) {
+                        launchSingleTop = true
+                    }
+                },
                 onGetFromApiClick = {
                     navController.navigate(PeopleListRoute)
                 })
@@ -40,6 +46,16 @@ fun AppNavHost() {
                         )
                     )
                 })
+        }
+        composable<CreatePasswordRoute> {
+            CreatePasswordScreen(onAccountCreated = {email ->
+                // Pop the password screen so Back from the attendee screen returns to Home,
+                // not to a form for an account that now exists.
+                navController.navigate(AttendeeRoute(email = email)) {
+                    popUpTo<CreatePasswordRoute> {inclusive = true}
+                    launchSingleTop = true
+                }
+            })   // attendeeId + email come automatically via SavedStateHandle
         }
         composable<EventAttendeesRoute> {
             EventAttendeesScreen( onGuestClick = { guestId ->

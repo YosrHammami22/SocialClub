@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -22,6 +27,8 @@ import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
 import com.yosrhammami.socialclub.ui.components.AppSecondaryButton
 import com.yosrhammami.socialclub.ui.components.AppTextField
 import com.yosrhammami.socialclub.ui.components.CaptionText
+import com.yosrhammami.socialclub.ui.components.ErrorText
+import com.yosrhammami.socialclub.ui.home.FindAttendeeUiState
 import com.yosrhammami.socialclub.ui.home.HomeViewModel
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
@@ -30,19 +37,44 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 @Composable
 fun HomeScreen(
     onValidEmail: (String) -> Unit,
+    onFirstConnection: (attendeeId: String, email: String) -> Unit,
     onGetFromApiClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     // Collect state from ViewModel
     val email by viewModel.email.collectAsStateWithLifecycle()
     val emailError by viewModel.emailError.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    /*
+    Navigation is driven by state, not by a callback handed to the ViewModel: the lookup is now
+    asynchronous, and a lambda captured before a rotation would point at a dead NavController.
+    rememberUpdatedState keeps the effect calling the latest lambdas without restarting it.
+     */
+    val currentOnValidEmail by rememberUpdatedState(onValidEmail)
+    val currentOnFirstConnection by rememberUpdatedState(onFirstConnection)
+    LaunchedEffect(uiState) {
+        when (val state = uiState) {
+            is FindAttendeeUiState.NeedsPassword -> {
+                currentOnFirstConnection(state.attendee.id, state.attendee.email)
+                viewModel.onNavigationHandled()
+            }
+            is FindAttendeeUiState.Success -> {
+                currentOnValidEmail(state.attendee.email)
+                viewModel.onNavigationHandled()
+            }
+            else -> Unit
+        }
+    }
 
     // Pass state down to the stateless content
     HomeContent(
         email = email,
         emailError = emailError,
         onEmailChange = viewModel::onEmailChanged,
-        onSubmit = {viewModel.onSubmitClick(onValidEmail = onValidEmail)},
+        onSubmit = viewModel::onSubmitClick,
+        isLoading = uiState is FindAttendeeUiState.Loading,
+        errorMessage = (uiState as? FindAttendeeUiState.Error)?.message,
         onGetFromApiClick = onGetFromApiClick
     )
 }
@@ -54,7 +86,9 @@ fun HomeContent(
     onEmailChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onGetFromApiClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
+    errorMessage: String? = null
 ) {
     Column(
         modifier = modifier
@@ -76,11 +110,22 @@ fun HomeContent(
         )
 
 
+        if (errorMessage != null) {
+            ErrorText(
+                text = errorMessage,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = Spacing.sm)
+                    .semantics {liveRegion = LiveRegionMode.Polite}
+            )
+        }
+
         Spacer(Modifier.height(Spacing.md))
 
         AppPrimaryButton(
             text = stringResource(R.string.find_registration),
-            onClick = onSubmit
+            onClick = onSubmit,
+            isLoading = isLoading
         )
         Spacer(Modifier.height(Spacing.md))
 
@@ -142,5 +187,31 @@ fun PreviewHomeContentFilled() {
             onEmailChange = {},
             onSubmit = {},
             onGetFromApiClick = {})
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PreviewHomeContentLoading() {
+    SocialClubTheme {
+        HomeContent(email = "jane.doe@example.com",
+            emailError = null,
+            onEmailChange = {},
+            onSubmit = {},
+            onGetFromApiClick = {},
+            isLoading = true)
+    }
+}
+
+@ThemePreviews
+@Composable
+fun PreviewHomeContentLookupError() {
+    SocialClubTheme {
+        HomeContent(email = "jane.doe@example.com",
+            emailError = null,
+            onEmailChange = {},
+            onSubmit = {},
+            onGetFromApiClick = {},
+            errorMessage = "Network error. Please check your connection and try again.")
     }
 }

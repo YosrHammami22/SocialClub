@@ -19,4 +19,10 @@ class AttendeeRepositoryImpl @Inject constructor(
         val dto = remoteDataSource.getAttendee(idPerson) ?: return null
         return dto.toDomain()
     }
+
+    override suspend fun linkAuthUid(attendeeId: String, authUid: String): Result<Unit> {
+        return runCatching {
+            remoteDataSource.updateAuthUid(attendeeId, authUid)
+        }
+    }
 }

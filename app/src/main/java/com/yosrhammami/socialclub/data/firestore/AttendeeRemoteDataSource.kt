@@ -33,4 +33,16 @@ class AttendeeRemoteDataSource @Inject constructor(
 
         return snapshot.toObject(AttendeeDto::class.java)
     }
+
+    // update() (not set()) so only this one field is touched, and it fails if the document doesn't exist
+    // instead of silently creating a half-empty attendee.
+    suspend fun updateAuthUid(attendeeId: String, authUid: String) {
+        firestore.collection("attendees")
+            .document(attendeeId)
+            .update(
+                "authUid",
+                authUid
+            )
+            .await()
+    }
 }
