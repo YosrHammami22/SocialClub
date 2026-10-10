@@ -1,10 +1,11 @@
 package com.yosrhammami.socialclub.ui.peopleList
 
-import com.yosrhammami.socialclub.FakePersonRepository
 import com.yosrhammami.socialclub.MainDispatcherRule
 import com.yosrhammami.socialclub.domain.model.Gender
 import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.domain.usecase.GetPeopleUseCase
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Rule
@@ -15,8 +16,12 @@ class PeopleListViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val fakeRepository = FakePersonRepository()
-    private val getPeopleUseCase = GetPeopleUseCase(fakeRepository)
+    /*
+    The use case is mocked rather than built on FakePersonRepository: the real one switches to
+    Dispatchers.IO, a real background thread that MainDispatcherRule doesn't replace, so uiState
+    was still Loading when the test read it.
+     */
+    private val getPeopleUseCase = mockk<GetPeopleUseCase>()
 
     @Test
     fun `when repository returns people, uiState becomes Success`() = runTest {
@@ -33,7 +38,7 @@ class PeopleListViewModelTest {
                 gender = Gender.UNKNOWN
             )
         )
-        fakeRepository.peopleToReturn = fakePeople
+        coEvery { getPeopleUseCase(20) } returns fakePeople
 
         // Act
         val viewModel = PeopleListViewModel(getPeopleUseCase)
@@ -50,7 +55,7 @@ class PeopleListViewModelTest {
     @Test
     fun `when repository throws, uiState becomes Error`() = runTest {
         // Arrange
-        fakeRepository.shouldThrowError = true
+        coEvery { getPeopleUseCase(20) } throws Exception("Network error")
 
         // Act
         val viewModel = PeopleListViewModel(getPeopleUseCase)
@@ -58,5 +63,6 @@ class PeopleListViewModelTest {
         // Assert
         val state = viewModel.uiState.value
         Assert.assertTrue(state is PeopleListUiState.Error)
+        Assert.assertEquals("Network error", (state as PeopleListUiState.Error).message)
     }
 }

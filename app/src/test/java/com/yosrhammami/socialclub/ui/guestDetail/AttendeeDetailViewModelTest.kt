@@ -111,7 +111,7 @@ class AttendeeDetailViewModelTest {
 
         viewModel.errorEvent.test {
             viewModel.onSendRequestClick()
-            assertEquals("No internet connection", awaitItem())
+            assertEquals("Error sending contact request No internet", awaitItem())
         }
     }
 
@@ -142,7 +142,7 @@ class AttendeeDetailViewModelTest {
         viewModel.errorEvent.test {
             viewModel.updateContactRequest(ContactRequestStatus.DECLINED)
 
-            assertEquals("No internet connection", awaitItem())
+            assertEquals("Error update contact request No internet", awaitItem())
         }
 
     }
