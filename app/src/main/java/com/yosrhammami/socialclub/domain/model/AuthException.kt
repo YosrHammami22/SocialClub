@@ -26,6 +26,10 @@ sealed class AuthException(message: String, cause: Throwable? = null) : Exceptio
     class TooManyAttempts(cause: Throwable? = null) :
         AuthException("Too many attempts. Please wait a moment and try again.", cause)
 
+    // The password was right, but the account it opened is not the one linked to this attendee.
+    class AccountMismatch(cause: Throwable? = null) :
+        AuthException("This account isn't linked to your registration. Please contact the organizer.", cause)
+
     class SignInFailed(cause: Throwable? = null) :
         AuthException("We couldn't sign you in. Please try again.", cause)
 

@@ -20,11 +20,13 @@ class AuthRepositoryImpl @Inject constructor(
         }.recoverCatching { throw it.toAuthException() }
     }
 
-    override suspend fun signIn(email: String, password: String): Result<Unit> {
+    override suspend fun signIn(email: String, password: String): Result<String> {
         return runCatching {
             remoteDataSource.signIn(email, password)
         }.recoverCatching { throw it.toSignInException() }
     }
+
+    override fun signOut() = remoteDataSource.signOut()
 
     override fun currentUserUid(): String? = remoteDataSource.currentUserUid()
 

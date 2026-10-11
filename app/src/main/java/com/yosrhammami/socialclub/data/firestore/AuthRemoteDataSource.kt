@@ -14,9 +14,12 @@ class AuthRemoteDataSource @Inject constructor(
         return checkNotNull(result.user) { "Firebase returned no user after account creation" }.uid
     }
 
-    suspend fun signIn(email: String, password: String) {
-        firebaseAuth.signInWithEmailAndPassword(email, password).await()
+    suspend fun signIn(email: String, password: String): String {
+        val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+        return checkNotNull(result.user) { "Firebase returned no user after sign-in" }.uid
     }
+
+    fun signOut() = firebaseAuth.signOut()
 
     fun currentUserUid(): String? = firebaseAuth.currentUser?.uid
 
