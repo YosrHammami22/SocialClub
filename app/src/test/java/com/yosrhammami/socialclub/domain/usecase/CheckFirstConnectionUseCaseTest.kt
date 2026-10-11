@@ -41,28 +41,19 @@ class CheckFirstConnectionUseCaseTest {
     }
 
     @Test
-    fun `when attendee has an account and is signed in on this device, result is AlreadyActivated`() = runTest {
+    fun `when the session uid matches the attendee authUid, result is AlreadyActivated`() = runTest {
         val activated = jane.copy(authUid = "uid-123")
         coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
-        every { authRepository.currentUserEmail() } returns "jane@test.com"
+        every { authRepository.currentUserUid() } returns "uid-123"
 
         assertEquals(FirstConnectionResult.AlreadyActivated(activated), useCase("jane@test.com"))
-    }
-
-    @Test
-    fun `when the session email differs only by case, result is still AlreadyActivated`() = runTest {
-        val activated = jane.copy(authUid = "uid-123", email = "Jane@Test.com")
-        coEvery { repository.findAttendeeByEmail("Jane@Test.com") } returns activated
-        every { authRepository.currentUserEmail() } returns "jane@test.com"
-
-        assertEquals(FirstConnectionResult.AlreadyActivated(activated), useCase("Jane@Test.com"))
     }
 
     @Test
     fun `when attendee has an account but the device has no session, result is NeedsSignIn`() = runTest {
         val activated = jane.copy(authUid = "uid-123")
         coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
-        every { authRepository.currentUserEmail() } returns null
+        every { authRepository.currentUserUid() } returns null
 
         assertEquals(FirstConnectionResult.NeedsSignIn(activated), useCase("jane@test.com"))
     }
@@ -71,7 +62,7 @@ class CheckFirstConnectionUseCaseTest {
     fun `when another account is signed in on this device, result is NeedsSignIn`() = runTest {
         val activated = jane.copy(authUid = "uid-123")
         coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
-        every { authRepository.currentUserEmail() } returns "john@test.com"
+        every { authRepository.currentUserUid() } returns "uid-999"
 
         assertEquals(FirstConnectionResult.NeedsSignIn(activated), useCase("jane@test.com"))
     }

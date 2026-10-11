@@ -8,9 +8,9 @@ interface AuthRepository {
     // Signs an existing account in on this device. Failures are AuthException subtypes.
     suspend fun signIn(email: String, password: String): Result<Unit>
 
-    // Email of the account signed in on this device, or null when there is no session.
+    // Uid of the account signed in on this device, or null when there is no session.
     // Not suspend: Firebase keeps the session in memory, so this is a local read.
-    fun currentUserEmail(): String?
+    fun currentUserUid(): String?
 
     // Deletes the currently signed-in account. Used to roll back a half-finished first connection.
     suspend fun deleteCurrentAccount(): Result<Unit>

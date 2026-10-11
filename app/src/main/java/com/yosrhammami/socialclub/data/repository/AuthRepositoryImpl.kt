@@ -26,7 +26,7 @@ class AuthRepositoryImpl @Inject constructor(
         }.recoverCatching { throw it.toSignInException() }
     }
 
-    override fun currentUserEmail(): String? = remoteDataSource.currentUserEmail()
+    override fun currentUserUid(): String? = remoteDataSource.currentUserUid()
 
     override suspend fun deleteCurrentAccount(): Result<Unit> {
         return runCatching {

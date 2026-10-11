@@ -21,10 +21,10 @@ class CheckFirstConnectionUseCase @Inject constructor(
 
         /*
         The session check lives here rather than in the NavHost so the "which screen next" decision
-        is plain, JVM-testable logic. Compared against the email stored in Firestore (not the typed
-        one) and case-insensitively, since Firebase Auth lowercases emails.
+        is plain, JVM-testable logic. Compared by uid, not email: authUid is the actual link between
+        the attendee and its Auth account, it is immutable, and it has no casing to normalize.
          */
-        val hasSession = authRepository.currentUserEmail().equals(attendee.email, ignoreCase = true)
+        val hasSession = authRepository.currentUserUid() == attendee.authUid
         return if (hasSession) {
             FirstConnectionResult.AlreadyActivated(attendee)
         } else {

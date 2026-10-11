@@ -18,7 +18,7 @@ class AuthRemoteDataSource @Inject constructor(
         firebaseAuth.signInWithEmailAndPassword(email, password).await()
     }
 
-    fun currentUserEmail(): String? = firebaseAuth.currentUser?.email
+    fun currentUserUid(): String? = firebaseAuth.currentUser?.uid
 
     suspend fun deleteCurrentAccount() {
         firebaseAuth.currentUser?.delete()?.await()
