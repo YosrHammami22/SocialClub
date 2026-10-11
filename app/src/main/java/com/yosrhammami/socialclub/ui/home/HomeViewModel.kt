@@ -55,6 +55,9 @@ class HomeViewModel @Inject constructor(
                     is FirstConnectionResult.NeedsPassword ->
                         _uiState.value = FindAttendeeUiState.NeedsPassword(result.attendee)
 
+                    is FirstConnectionResult.NeedsSignIn ->
+                        _uiState.value = FindAttendeeUiState.NeedsSignIn(result.attendee)
+
                     is FirstConnectionResult.AlreadyActivated ->
                         _uiState.value = FindAttendeeUiState.Success(result.attendee)
 
@@ -77,7 +80,7 @@ class HomeViewModel @Inject constructor(
     }
 
     /*
-    NeedsPassword/Success are navigation triggers held in state. The screen calls this right after
+    NeedsPassword/NeedsSignIn/Success are navigation triggers held in state. The screen calls this right after
     navigating; without it, coming Back to Home would re-collect the same state and navigate forward again.
      */
     fun onNavigationHandled() {

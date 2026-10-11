@@ -38,6 +38,7 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 fun HomeScreen(
     onValidEmail: (String) -> Unit,
     onFirstConnection: (attendeeId: String, email: String) -> Unit,
+    onSignInRequired: (email: String) -> Unit,
     onGetFromApiClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
@@ -53,10 +54,15 @@ fun HomeScreen(
      */
     val currentOnValidEmail by rememberUpdatedState(onValidEmail)
     val currentOnFirstConnection by rememberUpdatedState(onFirstConnection)
+    val currentOnSignInRequired by rememberUpdatedState(onSignInRequired)
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is FindAttendeeUiState.NeedsPassword -> {
                 currentOnFirstConnection(state.attendee.id, state.attendee.email)
+                viewModel.onNavigationHandled()
+            }
+            is FindAttendeeUiState.NeedsSignIn -> {
+                currentOnSignInRequired(state.attendee.email)
                 viewModel.onNavigationHandled()
             }
             is FindAttendeeUiState.Success -> {

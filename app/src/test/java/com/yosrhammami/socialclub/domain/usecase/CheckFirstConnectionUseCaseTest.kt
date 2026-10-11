@@ -3,7 +3,9 @@ package com.yosrhammami.socialclub.domain.usecase
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.FirstConnectionResult
 import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
+import com.yosrhammami.socialclub.domain.repository.AuthRepository
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -11,7 +13,8 @@ import org.junit.Test
 
 class CheckFirstConnectionUseCaseTest {
     private val repository = mockk<AttendeeRepository>()
-    private val useCase = CheckFirstConnectionUseCase(repository)
+    private val authRepository = mockk<AuthRepository>()
+    private val useCase = CheckFirstConnectionUseCase(repository, authRepository)
 
     private val jane = Attendee(id = "a1", fullName = "Jane Doe", email = "jane@test.com", age = 33)
 
@@ -38,10 +41,38 @@ class CheckFirstConnectionUseCaseTest {
     }
 
     @Test
-    fun `when attendee already has an authUid, result is AlreadyActivated with that attendee`() = runTest {
+    fun `when attendee has an account and is signed in on this device, result is AlreadyActivated`() = runTest {
         val activated = jane.copy(authUid = "uid-123")
         coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
+        every { authRepository.currentUserEmail() } returns "jane@test.com"
 
         assertEquals(FirstConnectionResult.AlreadyActivated(activated), useCase("jane@test.com"))
+    }
+
+    @Test
+    fun `when the session email differs only by case, result is still AlreadyActivated`() = runTest {
+        val activated = jane.copy(authUid = "uid-123", email = "Jane@Test.com")
+        coEvery { repository.findAttendeeByEmail("Jane@Test.com") } returns activated
+        every { authRepository.currentUserEmail() } returns "jane@test.com"
+
+        assertEquals(FirstConnectionResult.AlreadyActivated(activated), useCase("Jane@Test.com"))
+    }
+
+    @Test
+    fun `when attendee has an account but the device has no session, result is NeedsSignIn`() = runTest {
+        val activated = jane.copy(authUid = "uid-123")
+        coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
+        every { authRepository.currentUserEmail() } returns null
+
+        assertEquals(FirstConnectionResult.NeedsSignIn(activated), useCase("jane@test.com"))
+    }
+
+    @Test
+    fun `when another account is signed in on this device, result is NeedsSignIn`() = runTest {
+        val activated = jane.copy(authUid = "uid-123")
+        coEvery { repository.findAttendeeByEmail("jane@test.com") } returns activated
+        every { authRepository.currentUserEmail() } returns "john@test.com"
+
+        assertEquals(FirstConnectionResult.NeedsSignIn(activated), useCase("jane@test.com"))
     }
 }

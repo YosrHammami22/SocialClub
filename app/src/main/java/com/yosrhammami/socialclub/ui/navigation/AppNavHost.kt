@@ -8,7 +8,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.google.firebase.auth.FirebaseAuth
 import com.yosrhammami.socialclub.core.util.Logger
 import com.yosrhammami.socialclub.ui.createPassword.CreatePasswordScreen
 import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
@@ -35,18 +34,14 @@ fun AppNavHost( logger: Logger) {
         startDestination = HomeRoute
     ) {
         composable<HomeRoute> {
+            // The NavHost only maps outcomes to routes; which outcome applies (session or not)
+            // is decided in CheckFirstConnectionUseCase, where it is unit-tested.
             HomeScreen(onValidEmail = {email ->
-                val signedInEmail = FirebaseAuth.getInstance().currentUser?.email  // Who is using this app? The account logged in on this device right now
-                logger.i("onValidEmail email=$email signedInEmail=$signedInEmail")
-                // Session still alive for this attendee -> straight in. Otherwise (reinstall, new device,
-                // cleared data, or another account signed in) the password is asked again.
-                if (signedInEmail.equals(email, ignoreCase = true)) {
-                    navController.navigate(AttendeeRoute(email = email)) { launchSingleTop = true }
-                } else {
-                    navController.navigate(SignInRoute(email = email)) { launchSingleTop = true }
-                }
-
+                navController.navigate(AttendeeRoute(email = email)) { launchSingleTop = true }
             },
+                onSignInRequired = {email ->
+                    navController.navigate(SignInRoute(email = email)) { launchSingleTop = true }
+                },
                 onFirstConnection = {attendeeId, email ->
                     navController.navigate(CreatePasswordRoute(attendeeId = attendeeId, email = email)) {
                         launchSingleTop = true

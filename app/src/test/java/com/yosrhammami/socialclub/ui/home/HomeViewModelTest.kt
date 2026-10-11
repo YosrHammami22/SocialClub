@@ -46,7 +46,19 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `when attendee already has an account, uiState becomes Success`() = runTest {
+    fun `when attendee has an account but no session, uiState becomes NeedsSignIn`() = runTest {
+        val activated = jane.copy(authUid = "uid-123")
+        coEvery { fakeUseCase("jane@test.com") } returns FirstConnectionResult.NeedsSignIn(activated)
+        viewModel.onEmailChanged("jane@test.com")
+
+        viewModel.onSubmitClick()
+
+        assertEquals(FindAttendeeUiState.NeedsSignIn(activated), viewModel.uiState.value)
+        assertNull(viewModel.emailError.value)
+    }
+
+    @Test
+    fun `when attendee is already signed in on this device, uiState becomes Success`() = runTest {
         val activated = jane.copy(authUid = "uid-123")
         coEvery { fakeUseCase("jane@test.com") } returns FirstConnectionResult.AlreadyActivated(activated)
         viewModel.onEmailChanged("jane@test.com")
