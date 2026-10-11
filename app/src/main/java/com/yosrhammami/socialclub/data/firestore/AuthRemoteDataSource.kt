@@ -14,6 +14,10 @@ class AuthRemoteDataSource @Inject constructor(
         return checkNotNull(result.user) { "Firebase returned no user after account creation" }.uid
     }
 
+    suspend fun signIn(email: String, password: String) {
+        firebaseAuth.signInWithEmailAndPassword(email, password).await()
+    }
+
     suspend fun deleteCurrentAccount() {
         firebaseAuth.currentUser?.delete()?.await()
     }

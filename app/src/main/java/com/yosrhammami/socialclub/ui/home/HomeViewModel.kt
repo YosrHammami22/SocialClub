@@ -50,6 +50,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = FindAttendeeUiState.Loading
             try {
+                logger.i("Checking first connection for email $currentEmail  ${checkFirstConnectionUseCase(currentEmail).toString()}")
                 when (val result = checkFirstConnectionUseCase(currentEmail)) {
                     is FirstConnectionResult.NeedsPassword ->
                         _uiState.value = FindAttendeeUiState.NeedsPassword(result.attendee)
@@ -80,6 +81,7 @@ class HomeViewModel @Inject constructor(
     navigating; without it, coming Back to Home would re-collect the same state and navigate forward again.
      */
     fun onNavigationHandled() {
+        logger.i("onNavigationHandled ${FindAttendeeUiState.Idle}")
         _uiState.value = FindAttendeeUiState.Idle
     }
 

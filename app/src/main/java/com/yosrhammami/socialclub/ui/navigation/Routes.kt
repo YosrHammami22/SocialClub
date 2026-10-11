@@ -18,6 +18,9 @@ data class AttendeeRoute(val email: String)
 data class CreatePasswordRoute(val attendeeId: String, val email: String)
 
 @Serializable
+data class SignInRoute(val email: String)
+
+@Serializable
 data class EventAttendeesRoute(
     val eventId: String
 )

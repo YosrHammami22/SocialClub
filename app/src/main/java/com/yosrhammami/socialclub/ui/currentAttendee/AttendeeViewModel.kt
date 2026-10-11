@@ -26,6 +26,7 @@ class AttendeeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AttendeeUiState>(AttendeeUiState.Idle)
     val uiState: StateFlow<AttendeeUiState> = _uiState.asStateFlow()
    init {
+       logger.d("AttendeeViewModel: init email $email")
        loadAttendee(email)
    }
 
@@ -52,7 +53,7 @@ class AttendeeViewModel @Inject constructor(
             }
             catch (e: Exception) {
                 logger.e(
-                    "Error loading attendee",
+                    "AttendeeViewModel loadAttendee : Error loading attendee",
                     e
                 )
                 _uiState.value = AttendeeUiState.Error(e.message ?: "Unknown error")

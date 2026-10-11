@@ -18,6 +18,17 @@ sealed class AuthException(message: String, cause: Throwable? = null) : Exceptio
     class Network(cause: Throwable? = null) :
         AuthException("Network error. Please check your connection and try again.", cause)
 
+    // Sign-in only. Deliberately one message for "wrong password" and "no such account":
+    // Firebase reports both the same way, so an attacker can't probe which emails exist.
+    class InvalidCredentials(cause: Throwable? = null) :
+        AuthException("Incorrect password. Please try again.", cause)
+
+    class TooManyAttempts(cause: Throwable? = null) :
+        AuthException("Too many attempts. Please wait a moment and try again.", cause)
+
+    class SignInFailed(cause: Throwable? = null) :
+        AuthException("We couldn't sign you in. Please try again.", cause)
+
     class Unknown(cause: Throwable? = null) :
         AuthException("We couldn't create your account. Please try again.", cause)
 }

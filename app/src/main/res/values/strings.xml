@@ -18,6 +18,12 @@
     <string name="create_password_hint">At least 8 characters.</string>
     <string name="create_password_button">Create my account</string>
 
+    <!-- Sign in (account exists, no session on this device) -->
+    <string name="sign_in_title">Welcome back</string>
+    <string name="sign_in_subtitle">Enter the password for %1$s.</string>
+    <string name="sign_in_password_label">Password</string>
+    <string name="sign_in_button">Submit</string>
+
     <!-- Contact Request Button Labels -->
     <string name="contact_request_send">Send Request</string>
     <string name="contact_request_pending">Pending</string>

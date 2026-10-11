@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 val versionMajor = 1
-val versionMinor = 4
+val versionMinor = 5
 val versionPatch = 0
 
 android {

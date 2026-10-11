@@ -1,6 +1,7 @@
 package com.yosrhammami.socialclub.data.repository
 
 import com.google.firebase.FirebaseNetworkException
+import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
@@ -19,6 +20,12 @@ class AuthRepositoryImpl @Inject constructor(
         }.recoverCatching { throw it.toAuthException() }
     }
 
+    override suspend fun signIn(email: String, password: String): Result<Unit> {
+        return runCatching {
+            remoteDataSource.signIn(email, password)
+        }.recoverCatching { throw it.toSignInException() }
+    }
+
     override suspend fun deleteCurrentAccount(): Result<Unit> {
         return runCatching {
             remoteDataSource.deleteCurrentAccount()
@@ -32,5 +39,16 @@ class AuthRepositoryImpl @Inject constructor(
         is FirebaseAuthInvalidCredentialsException -> AuthException.InvalidEmail(this)
         is FirebaseNetworkException -> AuthException.Network(this)
         else -> AuthException.Unknown(this)
+    }
+
+    /*
+    A separate mapping from account creation: the same Firebase type means something different here.
+    On sign-in, FirebaseAuthInvalidCredentialsException is a wrong password, not a malformed email.
+     */
+    private fun Throwable.toSignInException(): AuthException = when (this) {
+        is FirebaseAuthInvalidCredentialsException -> AuthException.InvalidCredentials(this)
+        is FirebaseTooManyRequestsException -> AuthException.TooManyAttempts(this)
+        is FirebaseNetworkException -> AuthException.Network(this)
+        else -> AuthException.SignInFailed(this)
     }
 }
