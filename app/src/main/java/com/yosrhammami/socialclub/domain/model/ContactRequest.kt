@@ -2,14 +2,62 @@ package com.yosrhammami.socialclub.domain.model
 
 data class ContactRequest(
     val id: String,
-    val fromAttendeeId: String,     // the currentAttendee sending it
-    val toAttendeeId: String,       // the guestAttendee receiving it
+    val senderAuthUid: String,      // Firebase Auth UID of the attendee who sent it
+    val receiverAuthUid: String,    // Firebase Auth UID of the attendee receiving it
    // val message: String,
     val status: ContactRequestStatus,
     val createdAt: Long
 ) {
 
+    /**
+     * The receiver answers this request. Returns the updated request, or a [ContactRequestException]
+     * if [actorAuthUid] isn't the receiver, the request was already answered, or [newStatus] isn't
+     * an answer. Pure: it may run more than once inside a retried Firestore transaction.
+     */
+    fun respond(actorAuthUid: String, newStatus: ContactRequestStatus): Result<ContactRequest> = when {
+        newStatus == ContactRequestStatus.PENDING -> Result.failure(ContactRequestException.InvalidResponse())
+        actorAuthUid != receiverAuthUid -> Result.failure(ContactRequestException.NotReceiver())
+        status != ContactRequestStatus.PENDING -> Result.failure(ContactRequestException.AlreadyAnswered())
+        else -> Result.success(copy(status = newStatus))
+    }
+
     companion object {
+
+        /**
+         * Builds a new PENDING request from [senderAuthUid] to [receiverAuthUid], given the request
+         * that currently exists between them ([existing], null if none).
+         *
+         * Sending is allowed when no request exists, or when the existing one was DECLINED *by the
+         * person now sending* (the decliner may change their mind; the declined sender can't ask
+         * again). The sender/receiver roles of the new request follow who sends now.
+         * Pure, like [respond].
+         */
+        fun send(
+            existing: ContactRequest?,
+            senderAuthUid: String,
+            receiverAuthUid: String,
+            createdAt: Long
+        ): Result<ContactRequest> {
+            if (existing != null) {
+                val refusal = when (existing.status) {
+                    ContactRequestStatus.PENDING -> ContactRequestException.AlreadyPending()
+                    ContactRequestStatus.ACCEPTED -> ContactRequestException.AlreadyConnected()
+                    ContactRequestStatus.DECLINED ->
+                        if (existing.receiverAuthUid == senderAuthUid) null
+                        else ContactRequestException.CannotResend()
+                }
+                if (refusal != null) return Result.failure(refusal)
+            }
+            return Result.success(
+                ContactRequest(
+                    id = generateId(senderAuthUid, receiverAuthUid),
+                    senderAuthUid = senderAuthUid,
+                    receiverAuthUid = receiverAuthUid,
+                    status = ContactRequestStatus.PENDING,
+                    createdAt = createdAt
+                )
+            )
+        }
 
         /**
          * Builds the Firestore document ID for the contact request between two attendees,

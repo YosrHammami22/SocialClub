@@ -30,4 +30,5 @@
     <string name="contact_request_confirm">Confirm</string>
     <string name="contact_request_accepted">Accepted</string>
     <string name="contact_request_delete">Declined</string>
+    <string name="contact_request_guest_has_no_account">This person hasn\'t installed the app yet</string>
 </resources>

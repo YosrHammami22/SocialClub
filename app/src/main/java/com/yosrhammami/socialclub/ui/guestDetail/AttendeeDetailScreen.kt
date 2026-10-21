@@ -222,6 +222,10 @@ private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,o
             BodyText(text = stringResource(id = R.string.contact_request_accepted))
         }
 
+        ContactRequestButtonState.GuestHasNoAccount -> {
+            BodyText(text = stringResource(id = R.string.contact_request_guest_has_no_account))
+        }
+
         ContactRequestButtonState.Unknown, ContactRequestButtonState.Declined -> {
             // nothing shown
         }
@@ -277,6 +281,31 @@ fun AttendeeDetailNoTagsPreview() {
                         tags = emptyList()
                     ),
                     contactButtonState = ContactRequestButtonState.PendingReceiver
+                ),
+                onSendRequestClick = {},
+                onRespondToRequest = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun AttendeeDetailGuestHasNoAccountPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.Success(
+                    guestAttendee = Attendee(
+                        id = "3",
+                        fullName = "Camille Martin",
+                        email = "camille.martin@example.com",
+                        photoUrl = "https://randomuser.me/api/portraits/women/68.jpg",
+                        age = 27,
+                        prompt = "UX designer, coffee snob, always up for a museum visit.",
+                        tags = listOf("design", "coffee", "art")
+                    ),
+                    contactButtonState = ContactRequestButtonState.GuestHasNoAccount
                 ),
                 onSendRequestClick = {},
                 onRespondToRequest = {}
