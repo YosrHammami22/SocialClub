@@ -4,6 +4,7 @@ import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.AuthException
 import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
 import com.yosrhammami.socialclub.domain.repository.AuthRepository
+import kotlinx.coroutines.CancellationException
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.justRun
@@ -77,6 +78,23 @@ class SignInUseCaseTest {
         val result = useCase("jane@test.com", "sunny-Harbor42")
 
         assertEquals("Network error", result.exceptionOrNull()?.message)
+        coVerify(exactly = 0) { authRepository.signIn(any(), any()) }
+    }
+
+    // Backing out of sign-in cancels the coroutine: that must propagate, not come back as a
+    // failed Result the ViewModel would then show as a sign-in error.
+    @Test
+    fun `when the attendee lookup is cancelled, cancellation propagates instead of returning failure`() = runTest {
+        coEvery { attendeeRepository.findAttendeeByEmail("jane@test.com") } throws CancellationException("screen left")
+
+        val error = try {
+            useCase("jane@test.com", "sunny-Harbor42")
+            null
+        } catch (e: CancellationException) {
+            e
+        }
+
+        assertEquals("screen left", error?.message)
         coVerify(exactly = 0) { authRepository.signIn(any(), any()) }
     }
 }

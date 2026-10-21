@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.domain.usecase
 
+import com.yosrhammami.socialclub.core.util.runSuspendCatching
 import com.yosrhammami.socialclub.domain.model.AuthException
 import com.yosrhammami.socialclub.domain.repository.AttendeeRepository
 import com.yosrhammami.socialclub.domain.repository.AuthRepository
@@ -13,7 +14,7 @@ class SignInUseCase @Inject constructor(
     suspend operator fun invoke(email: String, password: String): Result<Unit> {
         // Re-read the attendee instead of trusting the previous screen, for the same reason as
         // CreateAttendeeAccountUseCase: authUid is the value we verify against, so it must be fresh.
-        val attendee = runCatching { attendeeRepository.findAttendeeByEmail(email) }
+        val attendee = runSuspendCatching { attendeeRepository.findAttendeeByEmail(email) }
             .getOrElse { return Result.failure(it) }
             ?: return Result.failure(IllegalStateException("We couldn't find this attendee."))
 

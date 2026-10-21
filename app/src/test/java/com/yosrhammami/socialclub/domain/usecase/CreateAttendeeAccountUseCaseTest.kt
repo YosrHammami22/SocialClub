@@ -8,6 +8,11 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -103,5 +108,56 @@ class CreateAttendeeAccountUseCaseTest {
         val result = useCase(attendeeId = "a1", password = "sunny-Harbor42")
 
         assertEquals("Permission denied", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `when the attendee lookup is cancelled, cancellation propagates and no account is created`() = runTest {
+        coEvery { attendeeRepository.getAttendee("a1") } throws CancellationException("screen left")
+
+        val error = try {
+            useCase(attendeeId = "a1", password = "sunny-Harbor42")
+            null
+        } catch (e: CancellationException) {
+            e
+        }
+
+        assertEquals("screen left", error?.message)
+        coVerify(exactly = 0) { authRepository.createAccount(any(), any()) }
+    }
+
+    // The user backs out while createAccount is in flight: the account still gets created
+    // server-side, so the link must still be written once it returns.
+    @Test
+    fun `when cancelled during account creation, the uid is still linked`() = runTest {
+        val accountCreated = CompletableDeferred<Result<String>>()
+        coEvery { attendeeRepository.getAttendee("a1") } returns jane
+        coEvery { authRepository.createAccount("jane@test.com", "sunny-Harbor42") } coAnswers { accountCreated.await() }
+        coEvery { attendeeRepository.linkAuthUid("a1", "uid-123") } returns Result.success(Unit)
+
+        val job = launch { useCase(attendeeId = "a1", password = "sunny-Harbor42") }
+        runCurrent()
+        job.cancel()
+        accountCreated.complete(Result.success("uid-123"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { attendeeRepository.linkAuthUid("a1", "uid-123") }
+        coVerify(exactly = 0) { authRepository.deleteCurrentAccount() }
+    }
+
+    @Test
+    fun `when cancelled and the link then fails, the account is still rolled back`() = runTest {
+        val accountCreated = CompletableDeferred<Result<String>>()
+        coEvery { attendeeRepository.getAttendee("a1") } returns jane
+        coEvery { authRepository.createAccount("jane@test.com", "sunny-Harbor42") } coAnswers { accountCreated.await() }
+        coEvery { attendeeRepository.linkAuthUid("a1", "uid-123") } returns Result.failure(Exception("Permission denied"))
+        coEvery { authRepository.deleteCurrentAccount() } returns Result.success(Unit)
+
+        val job = launch { useCase(attendeeId = "a1", password = "sunny-Harbor42") }
+        runCurrent()
+        job.cancel()
+        accountCreated.complete(Result.success("uid-123"))
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.deleteCurrentAccount() }
     }
 }

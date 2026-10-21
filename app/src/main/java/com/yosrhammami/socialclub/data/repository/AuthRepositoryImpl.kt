@@ -5,6 +5,7 @@ import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
+import com.yosrhammami.socialclub.core.util.runSuspendCatching
 import com.yosrhammami.socialclub.data.firestore.AuthRemoteDataSource
 import com.yosrhammami.socialclub.domain.model.AuthException
 import com.yosrhammami.socialclub.domain.repository.AuthRepository
@@ -15,13 +16,13 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun createAccount(email: String, password: String): Result<String> {
-        return runCatching {
+        return runSuspendCatching {
             remoteDataSource.createAccount(email, password)
         }.recoverCatching { throw it.toAuthException() }
     }
 
     override suspend fun signIn(email: String, password: String): Result<String> {
-        return runCatching {
+        return runSuspendCatching {
             remoteDataSource.signIn(email, password)
         }.recoverCatching { throw it.toSignInException() }
     }
@@ -31,7 +32,7 @@ class AuthRepositoryImpl @Inject constructor(
     override fun currentUserUid(): String? = remoteDataSource.currentUserUid()
 
     override suspend fun deleteCurrentAccount(): Result<Unit> {
-        return runCatching {
+        return runSuspendCatching {
             remoteDataSource.deleteCurrentAccount()
         }
     }
