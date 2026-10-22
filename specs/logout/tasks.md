@@ -50,15 +50,15 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
 
 ## Instrumented tests (`app/src/androidTest/...`)
 
-- [ ] **T6 · Presentation (UI) · AC1**
+- [x] **T6 · Presentation (UI) · AC1**
   `SettingsContent` in `LoggingOut`: button disabled, loader visible. In `Idle`: button enabled, no loader.
   Test: `ui/settings/SettingsContentTest.kt`
 
-- [ ] **T8 · Navigation · AC1, AC5**
+- [x] **T8 · Navigation · AC1, AC5**
   After `navigateToHomeClearingBackStack()`, Home is the only screen on the back stack.
   Test: `ui/navigation/LogoutNavigationTest.kt` (`TestNavHostController`)
 
-- [ ] **T9 · Config · AC5, C1**
+- [x] **T9 · Config · AC5, C1**
   `FirestoreModule.provideFirestoreSettings()` uses a memory-only cache.
   Test: `di/FirestoreSettingsTest.kt`
 
