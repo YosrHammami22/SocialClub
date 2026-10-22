@@ -44,8 +44,9 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   Test: `ui/navigation/AuthNavigationDeciderTest.kt`
 
 - [ ] **T10 · Presentation · AC4**
-  `SignInViewModel` starts with empty email and password.
-  Test: `ui/signIn/SignInViewModelTest.kt`
+  `HomeViewModel` starts with an empty email; `SignInViewModel` starts with an empty password.
+  Tests: one new test each in the existing `ui/home/HomeViewModelTest.kt` and `ui/signIn/SignInViewModelTest.kt`
+  (the provided file would have replaced the existing SignIn tests and assumed fields that don't exist).
 
 ## Instrumented tests (`app/src/androidTest/...`)
 
@@ -54,7 +55,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   Test: `ui/settings/SettingsContentTest.kt`
 
 - [ ] **T8 · Navigation · AC1, AC5**
-  After `navigateToSignInClearingBackStack()`, SignIn is the only screen on the back stack.
+  After `navigateToHomeClearingBackStack()`, Home is the only screen on the back stack.
   Test: `ui/navigation/LogoutNavigationTest.kt` (`TestNavHostController`)
 
 - [ ] **T9 · Config · AC5, C1**
@@ -64,14 +65,14 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
 ## Wiring (no dedicated test; covered by T11)
 
 - [x] **W1** — Hilt: bind `AuthRepository` → `AuthRepositoryImpl`; provide `DeliberateLogoutFlag` and `SessionManager` as `@Singleton`; apply the Firestore settings.
-- [ ] **W2** — App-level auth observer: collect `currentAttendee`, call `AuthNavigationDecider`, navigate and show the message.
-- [ ] **W3** — Settings screen: Logout button calls `SettingsViewModel.onLogoutClick()`.
+- [ ] **W2** — App-level auth observer: collect `currentAttendee`, call `AuthNavigationDecider`, navigate to Home and show the "session expired" snackbar.
+- [ ] **W3** — Settings screen (`SettingsRoute`, reached from a settings icon on `AttendeeScreen`): Logout button calls `SettingsViewModel.onLogoutClick()`.
 
 ## Manual checks
 
 - [ ] **T11 · AC2, AC3, AC7**
-  - [ ] Airplane mode on → tap Logout → SignIn appears (AC2)
-  - [ ] After logout, kill the app and reopen it → SignIn appears (AC3)
+  - [ ] Airplane mode on → tap Logout → Home (email step) appears (AC2)
+  - [ ] After logout, kill the app and reopen it → Home appears (AC3)
   - [ ] Fresh install or logged out → open the app → no error message (AC7)
   - [ ] Log in as user A, log out, log in as user B → nothing from A is visible (AC5, end to end)
 

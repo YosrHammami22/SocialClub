@@ -23,11 +23,11 @@ SessionManager.currentAttendee becomes null
         │
         ▼
 Auth observer (app level) ──▶ AuthNavigationDecider.decide(...)
-        │                          ├─ deliberate  → SignIn, no message      (AC6)
-        │                          ├─ not deliberate → SignIn + "session expired"
+        │                          ├─ deliberate  → Home, no message        (AC6)
+        │                          ├─ not deliberate → Home + "session expired" snackbar
         │                          └─ never logged in → nothing             (AC7)
         ▼
-navigateToSignInClearingBackStack()  → SignIn is the only screen left       (AC1)
+navigateToHomeClearingBackStack()  → Home is the only screen left           (AC1)
 ```
 
 ---
@@ -69,7 +69,8 @@ navigateToSignInClearingBackStack()  → SignIn is the only screen left       (A
 | `SettingsViewModel` | Exposes `StateFlow<SettingsUiState>` with `Idle` and `LoggingOut`. A tap while `LoggingOut` is ignored. | AC1: button disabled + loader, no double logout. |
 | No "done" state | The ViewModel does **not** navigate. | Navigation to SignIn lives in one place (the auth observer) for every reason a user gets logged out. |
 | `SettingsContent` | Stateless composable `(uiState, onLogoutClick)`, with test tags `SettingsTestTags.LOGOUT_BUTTON` / `LOGOUT_LOADER`. | Testable UI without ViewModel or Hilt. |
-| `SignInViewModel` | Initial state: empty email and password. | AC4. |
+| Entry point | A settings icon on `AttendeeScreen` (the current attendee's screen, first screen after login) opens `SettingsRoute`. | Spec says "on the Settings screen" but not how to reach it; decided during Implement. |
+| `HomeViewModel` / `SignInViewModel` | Initial state: empty email (Home) and empty password (SignIn). | AC4. Two new tests added to the existing test classes; existing tests untouched. |
 
 ---
 
@@ -79,7 +80,9 @@ navigateToSignInClearingBackStack()  → SignIn is the only screen left       (A
 |---|---|---|
 | Auth observer | Observes `currentAttendee`, remembers whether the user **was** logged in, and asks `AuthNavigationDecider`. | One place decides what happens when the user becomes `null`. |
 | `AuthNavigationDecider.decide(wasLoggedIn, isLoggedIn, wasDeliberateLogout)` | Pure function returning `AuthNavigation.None` or `AuthNavigation.ToSignIn(showSessionExpired)`. | The decision is unit-testable without Android. `wasLoggedIn` prevents a false "session expired" at app start (AC7). |
-| `NavController.navigateToSignInClearingBackStack()` | `navigate(SignInRoute) { popUpTo(graph.id) { inclusive = true }; launchSingleTop = true }` | AC1: SignIn is the only screen, so Back closes the app with no special code. Removed screens' ViewModels are destroyed, dropping the previous user's data from memory (AC5). |
+| Login screen = `HomeRoute` | Logout lands on Home (the email step), not `SignInRoute`. | `SignInRoute(email)` needs an email; passing the previous user's would break AC4. Home is already the start destination, so AC3 needs no change. Decided during Implement. |
+| `NavController.navigateToHomeClearingBackStack()` | `navigate(HomeRoute) { popUpTo(graph.id) { inclusive = true }; launchSingleTop = true }` | AC1: Home is the only screen, so Back closes the app with no special code. Removed screens' ViewModels are destroyed, dropping the previous user's data from memory (AC5). |
+| "Session expired" message | Snackbar from an app-level `SnackbarHostState`, shown after navigating. | Survives the navigation (it isn't owned by a destroyed screen). Known gap: nothing ends a session without a logout yet, so this branch has no trigger until one exists. |
 
 ### Alternative considered
 
@@ -96,7 +99,7 @@ navigateToSignInClearingBackStack()  → SignIn is the only screen left       (A
 | AC1 | `SettingsViewModel` states, `SettingsContent`, back stack clearing |
 | AC2 | Logout is local only |
 | AC3 | Start destination when logged out |
-| AC4 | `SignInViewModel` initial state |
+| AC4 | `HomeViewModel` + `SignInViewModel` initial state |
 | AC5 | Clearing order, `SessionManager.clear()`, Firestore memory-only cache, back stack clearing |
 | AC6 | `DeliberateLogoutFlag` + `AuthNavigationDecider` |
 | AC7 | `AuthNavigationDecider` (`wasLoggedIn`) |

@@ -25,6 +25,9 @@
 
 ## Acceptance criteria
 
+> **"The login screen"** below means the first step of signing in: the screen where the user enters their email.
+> (Signing in has two steps: email, then password.)
+
 ### AC1 — Logout leads to the login screen, with no way back
 - **Given** I am logged in and on the Settings screen
 - **When** I tap **Logout**
@@ -48,7 +51,7 @@
 ### AC4 — The login form is empty
 - **Given** I have logged out
 - **When** the login screen appears
-- **Then** the email and password fields are empty (nothing from the previous user is pre-filled)
+- **Then** the email field is empty, and so is the password field on the next step (nothing from the previous user is pre-filled)
 
 ### AC5 — The next user sees nothing of the previous user
 - **Given** Alice has logged out
