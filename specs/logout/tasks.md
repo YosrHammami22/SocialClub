@@ -23,7 +23,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `LogoutUseCase()` calls `AuthRepository.logout()` exactly once.
   Test: `domain/usecase/LogoutUseCaseTest.kt`
 
-- [ ] **T2 · Data · AC5, AC6**
+- [x] **T2 · Data · AC5, AC6**
   `AuthRepositoryImpl.logout()` runs in order: `markDeliberate()` → `SessionManager.clear()` → `signOut()`.
   Test: `data/repository/AuthRepositoryImplTest.kt` (real `SessionManager` and flag; only `AuthRemoteDataSource` is mocked, and its `signOut()` records the state at the moment it's called)
 

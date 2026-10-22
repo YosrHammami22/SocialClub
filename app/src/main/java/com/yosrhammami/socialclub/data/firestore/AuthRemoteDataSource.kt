@@ -1,29 +1,20 @@
 package com.yosrhammami.socialclub.data.firestore
 
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
+/*
+An interface (Firebase lives only in AuthRemoteDataSourceImpl) so AuthRepositoryImpl can be tested
+with a mock, per the project rule "mock interfaces, never concrete classes".
+ */
+interface AuthRemoteDataSource {
 
-class AuthRemoteDataSource @Inject constructor(
-    private val firebaseAuth: FirebaseAuth
-) {
+    // Returns the new account's uid. Firebase also signs this new user in.
+    suspend fun createAccount(email: String, password: String): String
 
-    // Note: on success Firebase also signs this new user in (firebaseAuth.currentUser is set).
-    suspend fun createAccount(email: String, password: String): String {
-        val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-        return checkNotNull(result.user) { "Firebase returned no user after account creation" }.uid
-    }
+    suspend fun signIn(email: String, password: String): String
 
-    suspend fun signIn(email: String, password: String): String {
-        val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-        return checkNotNull(result.user) { "Firebase returned no user after sign-in" }.uid
-    }
+    // Local only, no network: this is what lets logout work offline (spec AC2).
+    fun signOut()
 
-    fun signOut() = firebaseAuth.signOut()
+    fun currentUserUid(): String?
 
-    fun currentUserUid(): String? = firebaseAuth.currentUser?.uid
-
-    suspend fun deleteCurrentAccount() {
-        firebaseAuth.currentUser?.delete()?.await()
-    }
+    suspend fun deleteCurrentAccount()
 }
