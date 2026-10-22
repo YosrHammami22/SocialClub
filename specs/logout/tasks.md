@@ -27,7 +27,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `AuthRepositoryImpl.logout()` runs in order: `markDeliberate()` → `SessionManager.clear()` → `signOut()`.
   Test: `data/repository/AuthRepositoryImplTest.kt` (real `SessionManager` and flag; only `AuthRemoteDataSource` is mocked, and its `signOut()` records the state at the moment it's called)
 
-- [ ] **T3 · Data · AC5**
+- [x] **T3 · Data · AC5**
   `SessionManager.clear()` sets `currentAttendee` to `null`.
   Test: `data/session/SessionManagerTest.kt`
 
