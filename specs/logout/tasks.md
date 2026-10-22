@@ -31,7 +31,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `SessionManager.clear()` sets `currentAttendee` to `null`.
   Test: `data/session/SessionManagerTest.kt`
 
-- [ ] **T4 · Data · AC6**
+- [x] **T4 · Data · AC6**
   `DeliberateLogoutFlag.consume()` returns `true` once after `markDeliberate()`, then `false`.
   Test: `data/session/DeliberateLogoutFlagTest.kt`
 
