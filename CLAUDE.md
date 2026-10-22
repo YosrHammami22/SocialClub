@@ -64,6 +64,11 @@ attendee being viewed (event's guest list, or their detail screen).
   use cases stay narrowly about fetching/combining data; "this fetch means
   the user is now logged in" is a presentation-layer interpretation of that
   data, not an inherent property of fetching it.
+  **Exception: logout.** Clearing the session happens inside
+  `AuthRepositoryImpl.logout()`, not in a ViewModel. Reason: logout is several
+  steps in a strict order (mark deliberate → clear session → `signOut()` last),
+  the ViewModel must not touch Firebase, and the session-expired flow must
+  reuse the exact same steps. See `specs/logout/plan.md`.
 - Navigation: **Jetpack Navigation Compose (Nav2)**, not Nav3 — type-safe
   routes via `@Serializable` objects/data classes (Nav2 2.8+), not string
   routes. Deliberate choice given Nav3's bigger conceptual shift and this
@@ -71,8 +76,8 @@ attendee being viewed (event's guest list, or their detail screen).
 - Networking: Retrofit + GSON for RandomUser; a **separate** Retrofit
   instance + custom `@Qualifier` (`@AnthropicRetrofit`) for the Anthropic
   API (the Icebreaker AI feature), since the two need different base URLs.
-- Backend: Firebase (Firestore + Auth planned, not yet wired for real
-  sign-in — currently email-lookup-based, no password/session token yet).
+- Backend: Firebase — Firestore for data, Firebase Auth for sign-in with
+  email/password.
 - Local storage: Room was scaffolded for a "favorites" feature, then that
   feature was cut for scope reasons — don't assume Room is in active use
   unless a specific screen calls for it again.
@@ -182,3 +187,31 @@ attendee being viewed (event's guest list, or their detail screen).
 5. If something I ask for contradicts an existing, deliberate decision
    documented above, say so explicitly before proceeding — don't silently
    go along with a change that reverts a choice I made for a reason.
+
+## Spec-driven workflow (added for new features)
+New features are built spec-first. Each feature lives in `specs/<feature>/`:
+
+| File | Contains |
+|---|---|
+| `spec.md` | **What** and **why**: user story, acceptance criteria (AC1…), constraints (C1…), decisions with reasons, out of scope. No technology. |
+| `plan.md` | **How**: layers, classes, order of operations, alternatives rejected. Each decision points to an AC. |
+| `tasks.md` | Small test-first steps, each linked to an AC, with a checkbox. |
+
+1. Before writing code for a feature, read its `spec.md` and `plan.md`.
+2. Work on **one task at a time**, in the order of `tasks.md`.
+3. Never change a spec or plan decision silently. If the code needs something
+   the spec doesn't say, or contradicts it, stop and ask: the spec is updated
+   first, then the code. If a missing case is found, propose a new AC.
+4. If a spec/plan decision contradicts a convention documented in this file,
+   say so before implementing (same rule as point 5 above).
+
+## Test-first loop (per task)
+1. 🔴 Run the task's test and show that it fails.
+2. 🟢 Write the **minimum** code to make it pass.
+3. 🔵 Refactor with tests green.
+4. Run the tests, show the result, tick the task in `tasks.md`.
+
+- **Never modify an existing test to make it pass.** If a test looks wrong,
+  explain why and ask.
+- Don't write code that no test requires.
+- After each task, name the acceptance criterion it satisfies.
