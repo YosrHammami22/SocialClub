@@ -19,7 +19,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
 
 ## Unit tests (`app/src/test/...`)
 
-- [ ] **T1 · Domain · AC1**
+- [x] **T1 · Domain · AC1**
   `LogoutUseCase()` calls `AuthRepository.logout()` exactly once.
   Test: `domain/usecase/LogoutUseCaseTest.kt`
 

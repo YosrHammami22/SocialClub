@@ -29,6 +29,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun signOut() = remoteDataSource.signOut()
 
+    override suspend fun logout() = remoteDataSource.signOut()
+
     override fun currentUserUid(): String? = remoteDataSource.currentUserUid()
 
     override suspend fun deleteCurrentAccount(): Result<Unit> {

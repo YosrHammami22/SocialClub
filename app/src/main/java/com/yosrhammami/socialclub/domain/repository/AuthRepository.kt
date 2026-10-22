@@ -11,6 +11,10 @@ interface AuthRepository {
     // Drops this device's session. Local only, so it can't fail on the network.
     fun signOut()
 
+    // The user's own logout: clears this device's session data, then signs out. Local only, can't fail.
+    // Unlike signOut(), which only drops the Firebase session (e.g. to roll back an account mismatch).
+    suspend fun logout()
+
     // Uid of the account signed in on this device, or null when there is no session.
     // Not suspend: Firebase keeps the session in memory, so this is a local read.
     fun currentUserUid(): String?
