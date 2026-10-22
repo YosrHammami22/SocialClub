@@ -35,7 +35,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `DeliberateLogoutFlag.consume()` returns `true` once after `markDeliberate()`, then `false`.
   Test: `data/session/DeliberateLogoutFlagTest.kt`
 
-- [ ] **T5 · Presentation · AC1**
+- [x] **T5 · Presentation · AC1**
   `SettingsViewModel.onLogoutClick()` emits `LoggingOut`; a second tap while logging out does not call the use case again.
   Test: `ui/settings/SettingsViewModelTest.kt` (`CompletableDeferred` gate, assertions on `uiState.value`)
 
