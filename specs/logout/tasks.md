@@ -39,7 +39,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `SettingsViewModel.onLogoutClick()` emits `LoggingOut`; a second tap while logging out does not call the use case again.
   Test: `ui/settings/SettingsViewModelTest.kt` (`CompletableDeferred` gate, assertions on `uiState.value`)
 
-- [ ] **T7 · Navigation · AC6, AC7**
+- [x] **T7 · Navigation · AC6, AC7**
   `AuthNavigationDecider.decide(...)`: deliberate → SignIn, no message; not deliberate → SignIn + "session expired"; never logged in → nothing; still logged in → nothing.
   Test: `ui/navigation/AuthNavigationDeciderTest.kt`
 
