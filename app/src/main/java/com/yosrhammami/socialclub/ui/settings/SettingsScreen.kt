@@ -16,6 +16,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.getValue
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
 import com.yosrhammami.socialclub.ui.components.TitleText
@@ -26,6 +29,14 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 object SettingsTestTags {
     const val LOGOUT_BUTTON = "settings_logout_button"
     const val LOGOUT_LOADER = "settings_logout_loader"
+}
+
+@Composable
+fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    SettingsContent(uiState = uiState, onLogoutClick = viewModel::onLogoutClick)
 }
 
 @Composable

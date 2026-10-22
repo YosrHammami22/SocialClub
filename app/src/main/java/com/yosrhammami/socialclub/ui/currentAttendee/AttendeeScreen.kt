@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,7 +34,8 @@ import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 @Composable
 fun AttendeeScreen(
     viewModel: AttendeeViewModel = hiltViewModel(),
-    onEventClick: (eventId: String) -> Unit
+    onEventClick: (eventId: String) -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -50,7 +53,7 @@ fun AttendeeScreen(
                     Modifier
                         .fillMaxSize()
                 ) {
-                    AttendeeHeader(state.attendee)
+                    AttendeeHeader(state.attendee, onSettingsClick = onSettingsClick)
                     RegistrationList(
                         state.registrations,
                         onCardClick = onEventClick
@@ -69,7 +72,7 @@ fun AttendeeScreen(
     }
 }
 @Composable
-fun AttendeeHeader(attendee: Attendee) {
+fun AttendeeHeader(attendee: Attendee, onSettingsClick: () -> Unit) {
     val placeholder = attendee.gender.toPlaceholderDrawable()
     Row(
         modifier = Modifier.fillMaxWidth().padding(Spacing.md),
@@ -77,7 +80,17 @@ fun AttendeeHeader(attendee: Attendee) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         TitleText(text = "Hello, ${attendee.fullName.substringBefore(" ")}")
-        AppAvatar(name = attendee.fullName, placeholder= placeholder)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Entry point to Settings (and so to Logout). IconButton gives the 48dp touch target;
+            // the label is the icon's contentDescription, announced as "Settings, button".
+            IconButton(onClick = onSettingsClick) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_settings),
+                    contentDescription = stringResource(R.string.settings_open)
+                )
+            }
+            AppAvatar(name = attendee.fullName, placeholder= placeholder)
+        }
     }
 }
 
@@ -96,5 +109,5 @@ fun AttendeeScreenPreviews() {
             "tag2"
         )
     )
-    AttendeeHeader(attendee)
+    AttendeeHeader(attendee, onSettingsClick = {})
 }

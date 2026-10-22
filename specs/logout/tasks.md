@@ -65,8 +65,8 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
 ## Wiring (no dedicated test; covered by T11)
 
 - [x] **W1** — Hilt: bind `AuthRepository` → `AuthRepositoryImpl`; provide `DeliberateLogoutFlag` and `SessionManager` as `@Singleton`; apply the Firestore settings.
-- [ ] **W2** — App-level auth observer: collect `currentAttendee`, call `AuthNavigationDecider`, navigate to Home and show the "session expired" snackbar.
-- [ ] **W3** — Settings screen (`SettingsRoute`, reached from a settings icon on `AttendeeScreen`): Logout button calls `SettingsViewModel.onLogoutClick()`.
+- [x] **W2** — App-level auth observer: collect `currentAttendee`, call `AuthNavigationDecider`, navigate to Home and show the "session expired" snackbar.
+- [x] **W3** — Settings screen (`SettingsRoute`, reached from a settings icon on `AttendeeScreen`): Logout button calls `SettingsViewModel.onLogoutClick()`.
 
 ## Manual checks
 
