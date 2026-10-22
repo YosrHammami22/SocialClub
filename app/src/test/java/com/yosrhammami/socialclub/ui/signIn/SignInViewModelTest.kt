@@ -28,6 +28,15 @@ class SignInViewModelTest {
         )
     }
 
+    // Logout spec AC4: the password step never starts with a value from a previous session.
+    @Test
+    fun `initial password is empty and uiState is Idle`() {
+        val viewModel = createViewModel()
+
+        assertEquals("", viewModel.password.value)
+        assertEquals(SignInUiState.Idle, viewModel.uiState.value)
+    }
+
     @Test
     fun `when password is empty, passwordError is set and no sign-in is attempted`() = runTest {
         val viewModel = createViewModel()

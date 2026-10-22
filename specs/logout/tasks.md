@@ -43,7 +43,7 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `AuthNavigationDecider.decide(...)`: deliberate → SignIn, no message; not deliberate → SignIn + "session expired"; never logged in → nothing; still logged in → nothing.
   Test: `ui/navigation/AuthNavigationDeciderTest.kt`
 
-- [ ] **T10 · Presentation · AC4**
+- [x] **T10 · Presentation · AC4**
   `HomeViewModel` starts with an empty email; `SignInViewModel` starts with an empty password.
   Tests: one new test each in the existing `ui/home/HomeViewModelTest.kt` and `ui/signIn/SignInViewModelTest.kt`
   (the provided file would have replaced the existing SignIn tests and assumed fields that don't exist).

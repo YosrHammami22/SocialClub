@@ -23,6 +23,13 @@ class HomeViewModelTest {
 
     private val jane = Attendee(id = "a1", fullName = "Jane Doe", email = "jane@test.com", age = 33)
 
+    // Logout spec AC4: after logout, Home must not pre-fill the previous user's email.
+    @Test
+    fun `initial email is empty and there is no email error`() {
+        assertEquals("", viewModel.email.value)
+        assertNull(viewModel.emailError.value)
+    }
+
     @Test
     fun `when email is malformed, emailError is set and no lookup happens`() = runTest {
         viewModel.onEmailChanged("not-an-email")
