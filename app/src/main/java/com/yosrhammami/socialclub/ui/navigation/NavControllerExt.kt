@@ -14,3 +14,15 @@ fun NavController.navigateToHomeClearingBackStack() {
         launchSingleTop = true
     }
 }
+
+/*
+Mirror of the above for the way in (spec AC9): once identified, the attendee screen is the ONLY destination,
+so Back closes the app instead of returning to the email or password step. Clearing the whole graph (not just
+SignIn/CreatePassword) also destroys Home's ViewModel, so the typed email doesn't linger in memory.
+ */
+fun NavController.navigateToAttendeeClearingBackStack(email: String) {
+    navigate(AttendeeRoute(email = email)) {
+        popUpTo(graph.id) { inclusive = true }
+        launchSingleTop = true
+    }
+}

@@ -4,7 +4,12 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.test.platform.app.InstrumentationRegistry
+import com.yosrhammami.socialclub.R
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,5 +42,38 @@ class SettingsContentTest {
 
         composeRule.onNodeWithTag(SettingsTestTags.LOGOUT_BUTTON).assertIsEnabled()
         composeRule.onNodeWithTag(SettingsTestTags.LOGOUT_LOADER).assertDoesNotExist()
+    }
+
+    // T12 · AC8 — the Back button is found by its spoken label, the same way TalkBack finds it.
+    private val backLabel =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.navigate_back)
+
+    @Test
+    fun idle_showsBackButton_thatCallsOnBackClick() {
+        var backClicks = 0
+        composeRule.setContent {
+            SettingsContent(
+                uiState = SettingsUiState.Idle,
+                onLogoutClick = {},
+                onBackClick = { backClicks++ }
+            )
+        }
+
+        composeRule.onNodeWithContentDescription(backLabel).performClick()
+
+        assertEquals(1, backClicks)
+    }
+
+    @Test
+    fun loggingOut_hidesBackButton() {
+        composeRule.setContent {
+            SettingsContent(
+                uiState = SettingsUiState.LoggingOut,
+                onLogoutClick = {},
+                onBackClick = {}
+            )
+        }
+
+        composeRule.onNodeWithContentDescription(backLabel).assertDoesNotExist()
     }
 }

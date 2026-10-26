@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
@@ -21,7 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
-import com.yosrhammami.socialclub.ui.components.TitleText
+import com.yosrhammami.socialclub.ui.components.AppTopBar
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
@@ -33,49 +34,65 @@ object SettingsTestTags {
 
 @Composable
 fun SettingsScreen(
+    onBackClick: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    SettingsContent(uiState = uiState, onLogoutClick = viewModel::onLogoutClick)
+    SettingsContent(
+        uiState = uiState,
+        onLogoutClick = viewModel::onLogoutClick,
+        onBackClick = onBackClick
+    )
 }
 
 @Composable
 fun SettingsContent(
     uiState: SettingsUiState,
     onLogoutClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onBackClick: (() -> Unit)? = null
 ) {
+
     val isLoggingOut = uiState is SettingsUiState.LoggingOut
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(Spacing.lg),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        TitleText(text = stringResource(R.string.settings_title))
-        Spacer(Modifier.height(Spacing.lg))
-
-        // Disabled while logging out so a second tap can't start a second logout (AC1).
-        // Not AppPrimaryButton's isLoading: that spinner sits inside the Button, whose merged
-        // semantics hide it, so it couldn't be found (by tests) or announced on its own.
-        AppPrimaryButton(
-            text = stringResource(R.string.settings_logout_button),
-            onClick = onLogoutClick,
-            enabled = !isLoggingOut,
-            modifier = Modifier.testTag(SettingsTestTags.LOGOUT_BUTTON)
+    Column(modifier = modifier.fillMaxSize()) {
+        // Back is hidden while logging out: leaving Settings would destroy the ViewModel and
+        // cancel viewModelScope mid-logout, possibly between "clear session" and signOut().
+        AppTopBar(
+            title = stringResource(R.string.settings_title),
+            onBackClick = onBackClick,
+            enabled = !isLoggingOut
         )
-
-        if (isLoggingOut) {
-            val loggingOut = stringResource(R.string.settings_logging_out)
-            Spacer(Modifier.height(Spacing.md))
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .testTag(SettingsTestTags.LOGOUT_LOADER)
-                    .semantics { contentDescription = loggingOut }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(Spacing.lg),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Disabled while logging out so a second tap can't start a second logout (AC1).
+            // Not AppPrimaryButton's isLoading: that spinner sits inside the Button, whose merged
+            // semantics hide it, so it couldn't be found (by tests) or announced on its own.
+            AppPrimaryButton(
+                text = stringResource(R.string.settings_logout_button),
+                onClick = onLogoutClick,
+                enabled = !isLoggingOut,
+                modifier = Modifier.testTag(SettingsTestTags.LOGOUT_BUTTON)
             )
+
+            if (isLoggingOut) {
+                val loggingOut = stringResource(R.string.settings_logging_out)
+                Spacer(Modifier.height(Spacing.md))
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .testTag(SettingsTestTags.LOGOUT_LOADER)
+                        .semantics { contentDescription = loggingOut }
+                )
+            }
         }
     }
+
+
 }
 
 @ThemePreviews
@@ -83,7 +100,7 @@ fun SettingsContent(
 fun PreviewSettingsContentIdle() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            SettingsContent(uiState = SettingsUiState.Idle, onLogoutClick = {})
+            SettingsContent(uiState = SettingsUiState.Idle, onLogoutClick = {}, onBackClick = {})
         }
     }
 }
@@ -93,7 +110,7 @@ fun PreviewSettingsContentIdle() {
 fun PreviewSettingsContentLoggingOut() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            SettingsContent(uiState = SettingsUiState.LoggingOut, onLogoutClick = {})
+            SettingsContent(uiState = SettingsUiState.LoggingOut, onLogoutClick = {}, onBackClick = {})
         }
     }
 }

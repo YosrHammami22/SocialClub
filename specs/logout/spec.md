@@ -74,6 +74,26 @@
 > AC7 was discovered while writing the tests (Step 5), not during Clarify.
 > When implementation exposes a gap, the spec is updated first.
 
+### AC8 — Settings can't be left from its Back button while logging out
+- **Given** I am on the Settings screen
+- **When** no logout is in progress
+- **Then** a **Back** button is shown at the top of the screen and returns to the previous screen
+- **When** I have tapped **Logout** and it is still in progress
+- **Then** that **Back** button is not shown
+
+> Why: leaving Settings mid-logout could stop the logout halfway, before it finishes.
+> AC8 was discovered when the top bar was added to Settings, after Implement.
+> **Known gap:** the device's own Back gesture is not covered yet; it needs its own decision.
+
+### AC9 — Back on the attendee screen closes the app
+- **Given** I have just been identified (email only, email + password, or first-time password creation) and I am on my attendee screen
+- **When** I press **Back**
+- **Then** the app closes (it never returns to the login screen or the password screen)
+
+> Why: once the user is identified, there is no reason to go back and submit another email.
+> The mirror of AC1: logged out, Back can't reach private screens; logged in, Back can't reach the login screen.
+> AC9 was discovered after Implement.
+
 ---
 
 ## Decisions (from Clarify)
@@ -84,6 +104,7 @@
 | Can logout fail? | **No**, not from the user's point of view. It always ends on the login screen. | Logout only clears the device (AC2), so there is no server step that can fail. |
 | User taps Logout twice quickly? | The button is **disabled** with a loader until the login screen appears. | Prevents two logouts / two navigations. |
 | Back button on the login screen? | **Closes the app.** | For a logged-out user there is no screen before login; any other screen would be private. |
+| Back button on the attendee screen? | **Closes the app.** | Once identified, there is no reason to go back and submit another email (AC9). Switching user goes through Logout. |
 | Which data is "the user's data"? | **Everything** the user sees: contacts, sent requests, received requests. | Users cannot post public content in SocialClub, so all of it is personal. |
 | Changes not yet sent to the server when logging out? | **Not applicable.** | C1: the app has no offline mode, so nothing can be pending. |
 | Logout vs. session expired? | The app must tell them apart: a deliberate logout shows no message, an expired session shows "session expired". | Same result (user logged out), different reason, different message. |

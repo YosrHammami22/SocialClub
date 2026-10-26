@@ -62,6 +62,14 @@ Order is **inside-out**: domain (fastest, no Android) → data → presentation 
   `FirestoreModule.provideFirestoreSettings()` uses a memory-only cache.
   Test: `di/FirestoreSettingsTest.kt`
 
+- [x] **T12 · Presentation (UI) · AC8**
+  `SettingsContent` in `Idle`: the "Back" button is shown and calls `onBackClick`. In `LoggingOut`: no "Back" button.
+  Test: two new tests in `ui/settings/SettingsContentTest.kt` (existing T6 tests untouched)
+
+- [x] **T13 · Navigation · AC9**
+  After `navigateToAttendeeClearingBackStack(email)`, the attendee screen is the only screen on the back stack.
+  Test: new test in `ui/navigation/LoginNavigationTest.kt` (`TestNavHostController`, same shape as T8)
+
 ## Wiring (no dedicated test; covered by T11)
 
 - [x] **W1** — Hilt: bind `AuthRepository` → `AuthRepositoryImpl`; provide `DeliberateLogoutFlag` and `SessionManager` as `@Singleton`; apply the Firestore settings.

@@ -68,7 +68,8 @@ navigateToHomeClearingBackStack()  → Home is the only screen left           (A
 |---|---|---|
 | `SettingsViewModel` | Exposes `StateFlow<SettingsUiState>` with `Idle` and `LoggingOut`. A tap while `LoggingOut` is ignored. | AC1: button disabled + loader, no double logout. |
 | No "done" state | The ViewModel does **not** navigate. | Navigation to SignIn lives in one place (the auth observer) for every reason a user gets logged out. |
-| `SettingsContent` | Stateless composable `(uiState, onLogoutClick)`, with test tags `SettingsTestTags.LOGOUT_BUTTON` / `LOGOUT_LOADER`. | Testable UI without ViewModel or Hilt. |
+| `SettingsContent` | Stateless composable `(uiState, onLogoutClick, onBackClick: (() -> Unit)? = null)`, with test tags `SettingsTestTags.LOGOUT_BUTTON` / `LOGOUT_LOADER`. | Testable UI without ViewModel or Hilt. `onBackClick` is optional so the existing T6 calls stay unchanged. |
+| Top bar | `AppTopBar` with the Settings title. Its back button gets `onBackClick` in `Idle` and `null` (no button) in `LoggingOut`. `AppNavHost` wires it to `popBackStack()`. | AC8: popping Settings destroys `SettingsViewModel`, cancelling `viewModelScope` mid-logout — possibly between `SessionManager.clear()` and `signOut()`, breaking the order above (AC5). |
 | Entry point | A settings icon on `AttendeeScreen` (the current attendee's screen, first screen after login) opens `SettingsRoute`. | Spec says "on the Settings screen" but not how to reach it; decided during Implement. |
 | `HomeViewModel` / `SignInViewModel` | Initial state: empty email (Home) and empty password (SignIn). | AC4. Two new tests added to the existing test classes; existing tests untouched. |
 
@@ -82,6 +83,7 @@ navigateToHomeClearingBackStack()  → Home is the only screen left           (A
 | `AuthNavigationDecider.decide(wasLoggedIn, isLoggedIn, wasDeliberateLogout)` | Pure function returning `AuthNavigation.None` or `AuthNavigation.ToSignIn(showSessionExpired)`. | The decision is unit-testable without Android. `wasLoggedIn` prevents a false "session expired" at app start (AC7). |
 | Login screen = `HomeRoute` | Logout lands on Home (the email step), not `SignInRoute`. | `SignInRoute(email)` needs an email; passing the previous user's would break AC4. Home is already the start destination, so AC3 needs no change. Decided during Implement. |
 | `NavController.navigateToHomeClearingBackStack()` | `navigate(HomeRoute) { popUpTo(graph.id) { inclusive = true }; launchSingleTop = true }` | AC1: Home is the only screen, so Back closes the app with no special code. Removed screens' ViewModels are destroyed, dropping the previous user's data from memory (AC5). |
+| `NavController.navigateToAttendeeClearingBackStack(email)` | `navigate(AttendeeRoute(email)) { popUpTo(graph.id) { inclusive = true }; launchSingleTop = true }`, used by all three ways in (Home, SignIn, CreatePassword). | AC9: the attendee screen is the only screen, so Back closes the app with no special code — same technique as AC1. Home/SignIn/CreatePassword ViewModels are destroyed, so no typed email or password stays in memory. Replaces the earlier `popUpTo<SignInRoute>` / `popUpTo<CreatePasswordRoute>`, which kept Home under the attendee screen. |
 | "Session expired" message | Snackbar from an app-level `SnackbarHostState`, shown after navigating. | Survives the navigation (it isn't owned by a destroyed screen). Known gap: nothing ends a session without a logout yet, so this branch has no trigger until one exists. |
 
 ### Alternative considered
@@ -89,6 +91,15 @@ navigateToHomeClearingBackStack()  → Home is the only screen left           (A
 | Option | Rejected because |
 |---|---|
 | Intercept Back on SignIn and close the app | A patch: old screens stay on the stack and their ViewModels keep the previous user's data in memory. |
+
+### Open question (AC8 known gap)
+
+The system Back gesture can still pop Settings mid-logout. Options, not decided yet:
+
+| Option | Trade-off |
+|---|---|
+| `BackHandler(enabled = isLoggingOut) {}` in `SettingsContent` | Small, local. Still ties logout's completion to the screen's lifetime. |
+| Run `logout()` in an app-level `CoroutineScope` (e.g. in `AuthRepositoryImpl`) | Logout can never be cut short, whatever the UI does. Adds an injected scope. |
 
 ---
 
@@ -103,3 +114,8 @@ navigateToHomeClearingBackStack()  → Home is the only screen left           (A
 | AC5 | Clearing order, `SessionManager.clear()`, Firestore memory-only cache, back stack clearing |
 | AC6 | `DeliberateLogoutFlag` + `AuthNavigationDecider` |
 | AC7 | `AuthNavigationDecider` (`wasLoggedIn`) |
+| AC8 | `SettingsContent` top bar (T12) |
+| AC9 | Back stack clearing on the way in (T13) |
+
+**Accepted trade-offs (AC9):** the "Get from API" demo is only reachable from Home, so it is out of reach once identified.
+Reopening the app while still signed in starts on Home, not the attendee screen — a separate gap, not covered by AC9.

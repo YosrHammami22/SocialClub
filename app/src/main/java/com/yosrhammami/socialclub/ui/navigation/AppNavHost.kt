@@ -69,7 +69,7 @@ fun AppNavHost(
                 // The NavHost only maps outcomes to routes; which outcome applies (session or not)
                 // is decided in CheckFirstConnectionUseCase, where it is unit-tested.
                 HomeScreen(onValidEmail = {email ->
-                    navController.navigate(AttendeeRoute(email = email)) { launchSingleTop = true }
+                    navController.navigateToAttendeeClearingBackStack(email)
                 },
                     onSignInRequired = {email ->
                         navController.navigate(SignInRoute(email = email)) { launchSingleTop = true }
@@ -98,27 +98,19 @@ fun AppNavHost(
                     })
             }
             composable<SettingsRoute> {
-                // No navigation callback on purpose: after logout, the auth observer above navigates.
-                SettingsScreen()
+                // Only Back is wired here: after logout, the auth observer above navigates.
+                SettingsScreen(onBackClick = { navController.popBackStack() })
             }
             composable<CreatePasswordRoute> {
                 CreatePasswordScreen(onAccountCreated = {email ->
-                    // Pop the password screen so Back from the attendee screen returns to Home,
-                    // not to a form for an account that now exists.
-                    navController.navigate(AttendeeRoute(email = email)) {
-                        popUpTo<CreatePasswordRoute> {inclusive = true}
-                        launchSingleTop = true
-                    }
+                    // Once identified, Back closes the app: no return to Home or this form (spec AC9).
+                    navController.navigateToAttendeeClearingBackStack(email)
                 })   // attendeeId + email come automatically via SavedStateHandle
             }
             composable<SignInRoute> {
                 SignInScreen(onSignedIn = {email ->
-                    // Same reasoning as CreatePassword: Back from the attendee screen returns to Home,
-                    // not to a password form for a session that now exists.
-                    navController.navigate(AttendeeRoute(email = email)) {
-                        popUpTo<SignInRoute> {inclusive = true}
-                        launchSingleTop = true
-                    }
+                    // Same as CreatePassword: Back from the attendee screen closes the app (spec AC9).
+                    navController.navigateToAttendeeClearingBackStack(email)
                 })   // email comes automatically via SavedStateHandle
             }
             composable<EventAttendeesRoute> {

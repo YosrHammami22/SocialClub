@@ -40,7 +40,9 @@ fun AttendeeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
-        Modifier.fillMaxSize().padding(top=Spacing.xxl),
+        Modifier
+            .fillMaxSize()
+            .padding(top = Spacing.xxl),
         contentAlignment = Alignment.Center
     ) {
         when (val state = uiState) {
@@ -50,10 +52,12 @@ fun AttendeeScreen(
 
             is AttendeeUiState.Success -> {
                 Column(
-                    Modifier
-                        .fillMaxSize()
+                    Modifier.fillMaxSize()
                 ) {
-                    AttendeeHeader(state.attendee, onSettingsClick = onSettingsClick)
+                    AttendeeHeader(
+                        state.attendee,
+                        onSettingsClick = onSettingsClick
+                    )
                     RegistrationList(
                         state.registrations,
                         onCardClick = onEventClick
@@ -71,11 +75,17 @@ fun AttendeeScreen(
         }
     }
 }
+
 @Composable
-fun AttendeeHeader(attendee: Attendee, onSettingsClick: () -> Unit) {
+fun AttendeeHeader(
+    attendee: Attendee,
+    onSettingsClick: () -> Unit
+) {
     val placeholder = attendee.gender.toPlaceholderDrawable()
     Row(
-        modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -83,17 +93,14 @@ fun AttendeeHeader(attendee: Attendee, onSettingsClick: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             // Entry point to Settings (and so to Logout). IconButton gives the 48dp touch target;
             // the label is the icon's contentDescription, announced as "Settings, button".
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_settings),
-                    contentDescription = stringResource(R.string.settings_open)
-                )
-            }
-            AppAvatar(name = attendee.fullName, placeholder= placeholder)
+            AppAvatar(
+                name = attendee.fullName,
+                placeholder = placeholder,
+                onClick = onSettingsClick
+            )
         }
     }
 }
-
 
 @ThemePreviews
 @Composable
@@ -109,5 +116,7 @@ fun AttendeeScreenPreviews() {
             "tag2"
         )
     )
-    AttendeeHeader(attendee, onSettingsClick = {})
+    AttendeeHeader(
+        attendee,
+        onSettingsClick = {})
 }
