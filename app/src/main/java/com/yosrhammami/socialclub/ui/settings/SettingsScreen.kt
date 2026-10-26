@@ -57,10 +57,11 @@ fun SettingsContent(
     Column(modifier = modifier.fillMaxSize()) {
         // Back is hidden while logging out: leaving Settings would destroy the ViewModel and
         // cancel viewModelScope mid-logout, possibly between "clear session" and signOut().
+        // Passing null removes the button (AppTopBar's root-screen case), rather than disabling
+        // it: a greyed-out Back would still be focusable and announced by TalkBack.
         AppTopBar(
             title = stringResource(R.string.settings_title),
-            onBackClick = onBackClick,
-            enabled = !isLoggingOut
+            onBackClick = onBackClick.takeIf { !isLoggingOut }
         )
         Column(
             modifier = Modifier
