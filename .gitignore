@@ -22,3 +22,6 @@ local.properties
 .claude/commands/explain.md
 .claude/commands/interview-me.md
 /.claude/commands/settings.json
+
+# Local e2e emulator skill (adb scripts), not part of the app
+.claude/skills/e2e/
