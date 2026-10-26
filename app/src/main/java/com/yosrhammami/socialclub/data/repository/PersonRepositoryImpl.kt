@@ -1,6 +1,5 @@
 package com.yosrhammami.socialclub.data.repository
 
-import com.yosrhammami.socialclub.core.util.AppLog
 import com.yosrhammami.socialclub.core.util.Logger
 import com.yosrhammami.socialclub.data.remote.toDomain
 import com.yosrhammami.socialclub.domain.model.Person

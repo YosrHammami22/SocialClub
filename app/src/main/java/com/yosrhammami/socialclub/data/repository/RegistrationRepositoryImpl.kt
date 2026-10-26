@@ -1,9 +1,9 @@
 package com.yosrhammami.socialclub.data.repository
 
-import com.yosrhammami.socialclub.domain.repository.RegistrationRepository
 import com.yosrhammami.socialclub.data.firestore.RegistrationRemoteDataSource
 import com.yosrhammami.socialclub.data.remote.toDomain
 import com.yosrhammami.socialclub.domain.model.Registration
+import com.yosrhammami.socialclub.domain.repository.RegistrationRepository
 import javax.inject.Inject
 
 class RegistrationRepositoryImpl @Inject constructor(private val remoteDataSource: RegistrationRemoteDataSource):

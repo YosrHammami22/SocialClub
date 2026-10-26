@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 val versionMajor = 1
-val versionMinor = 4
+val versionMinor = 6
 val versionPatch = 0
 
 android {
@@ -77,8 +77,8 @@ dependencies {
     // Hilt dependencies
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-    // Hilt with Compose Navigation
-    implementation(libs.hilt.navigation.compose)
+    // hiltViewModel() for Compose (works with Nav2 back stack entries)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     // serialization
     implementation(libs.kotlinx.serialization.json)
@@ -96,6 +96,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    // TestNavHostController: inspect the real back stack after logout (spec AC1)
+    androidTestImplementation(libs.androidx.navigation.testing)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(libs.turbine)

@@ -15,10 +15,19 @@ object HomeRoute
 data class AttendeeRoute(val email: String)
 
 @Serializable
+data class CreatePasswordRoute(val attendeeId: String, val email: String)
+
+@Serializable
+data class SignInRoute(val email: String)
+
+@Serializable
 data class EventAttendeesRoute(
     val eventId: String
 )
 
 @Serializable
 data class AttendeeDetailRoute(val attendeeId: String)
+
+@Serializable
+object SettingsRoute
 // existing PeopleListRoute, PersonDetailRoute stay as-is

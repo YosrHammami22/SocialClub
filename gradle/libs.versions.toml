@@ -14,7 +14,7 @@ retrofit = "3.0.0"
 okhttp = "5.5.0"
 
 hilt = "2.60.1"
-hiltNavigationCompose = "1.4.0"
+hiltLifecycleViewModelCompose = "1.4.0"
 navigationCompose = "2.10.1"
 glance = "1.2.0"
 kotlinxSerialization = "1.11.0"
@@ -58,9 +58,11 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 # Hilt core libraries
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
-# For using Hilt with Jetpack Compose Navigation
-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+# hiltViewModel() for Compose. Replaces hilt-navigation-compose, whose hiltViewModel() is deprecated
+# and moved here; it still works with NavBackStackEntry, so Nav2 scoping is unchanged.
+hilt-lifecycle-viewmodel-compose = { group = "androidx.hilt", name = "hilt-lifecycle-viewmodel-compose", version.ref = "hiltLifecycleViewModelCompose" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "navigationCompose" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 androidx-glance-material3 = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 # For serialization

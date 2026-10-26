@@ -11,15 +11,22 @@ class GetContactRequestStateUseCase @Inject constructor(
     private val repository: ContactRequestRepository
 ) {
     operator fun invoke(
-        fromAttendeeId: String,
-        toAttendeeId: String
+        currentAuthUid: String,
+        otherAuthUid: String
     ): Flow<ContactRequestButtonState> {
-        return repository.observeContactRequest(fromAttendeeId, toAttendeeId).map { request ->
+        return repository.observeContactRequest(currentAuthUid, otherAuthUid).map { request ->
+            val iAmSender = request?.senderAuthUid == currentAuthUid
+            val iAmReceiver = request?.receiverAuthUid == currentAuthUid
             when {
                 request == null -> ContactRequestButtonState.NoRequest
-                request.status == ContactRequestStatus.DECLINED -> ContactRequestButtonState.Declined
+                // Neither party matches: corrupt document. Show nothing rather than any action —
+                // the old `else` fallback offered Confirm/Delete here.
+                !iAmSender && !iAmReceiver -> ContactRequestButtonState.Unknown
                 request.status == ContactRequestStatus.ACCEPTED -> ContactRequestButtonState.Accepted
-                request.status == ContactRequestStatus.PENDING && request.fromAttendeeId == fromAttendeeId -> ContactRequestButtonState.PendingSender
+                // Mirrors ContactRequest.send(): the person who declined may send a new request.
+                request.status == ContactRequestStatus.DECLINED && iAmReceiver -> ContactRequestButtonState.NoRequest
+                request.status == ContactRequestStatus.DECLINED -> ContactRequestButtonState.Declined
+                iAmSender -> ContactRequestButtonState.PendingSender
                 else -> ContactRequestButtonState.PendingReceiver
             }
         }

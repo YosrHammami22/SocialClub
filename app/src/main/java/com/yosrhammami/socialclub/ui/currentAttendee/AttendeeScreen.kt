@@ -8,16 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Attendee
@@ -32,12 +28,15 @@ import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
 @Composable
 fun AttendeeScreen(
     viewModel: AttendeeViewModel = hiltViewModel(),
-    onEventClick: (eventId: String) -> Unit
+    onEventClick: (eventId: String) -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
-        Modifier.fillMaxSize().padding(top=Spacing.xxl),
+        Modifier
+            .fillMaxSize()
+            .padding(top = Spacing.xxl),
         contentAlignment = Alignment.Center
     ) {
         when (val state = uiState) {
@@ -47,10 +46,12 @@ fun AttendeeScreen(
 
             is AttendeeUiState.Success -> {
                 Column(
-                    Modifier
-                        .fillMaxSize()
+                    Modifier.fillMaxSize()
                 ) {
-                    AttendeeHeader(state.attendee)
+                    AttendeeHeader(
+                        state.attendee,
+                        onSettingsClick = onSettingsClick
+                    )
                     RegistrationList(
                         state.registrations,
                         onCardClick = onEventClick
@@ -68,19 +69,33 @@ fun AttendeeScreen(
         }
     }
 }
+
 @Composable
-fun AttendeeHeader(attendee: Attendee) {
+fun AttendeeHeader(
+    attendee: Attendee,
+    onSettingsClick: () -> Unit
+) {
     val placeholder = attendee.gender.toPlaceholderDrawable()
     Row(
-        modifier = Modifier.fillMaxWidth().padding(Spacing.md),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(Spacing.md),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         TitleText(text = "Hello, ${attendee.fullName.substringBefore(" ")}")
-        AppAvatar(name = attendee.fullName, placeholder= placeholder)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Entry point to Settings (and so to Logout). The avatar is the button, so it carries
+            // the "Settings" name: TalkBack announces "Settings, button" with a photo or initials.
+            AppAvatar(
+                name = attendee.fullName,
+                placeholder = placeholder,
+                onClick = onSettingsClick,
+                contentDescription = stringResource(R.string.settings_open)
+            )
+        }
     }
 }
-
 
 @ThemePreviews
 @Composable
@@ -96,5 +111,7 @@ fun AttendeeScreenPreviews() {
             "tag2"
         )
     )
-    AttendeeHeader(attendee)
+    AttendeeHeader(
+        attendee,
+        onSettingsClick = {})
 }

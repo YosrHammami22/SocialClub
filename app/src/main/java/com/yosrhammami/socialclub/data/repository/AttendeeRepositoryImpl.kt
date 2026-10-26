@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.data.repository
 
+import com.yosrhammami.socialclub.core.util.runSuspendCatching
 import com.yosrhammami.socialclub.data.firestore.AttendeeRemoteDataSource
 import com.yosrhammami.socialclub.data.remote.toDomain
 import com.yosrhammami.socialclub.domain.model.Attendee
@@ -18,5 +19,11 @@ class AttendeeRepositoryImpl @Inject constructor(
     override suspend fun getAttendee(idPerson: String): Attendee? {
         val dto = remoteDataSource.getAttendee(idPerson) ?: return null
         return dto.toDomain()
+    }
+
+    override suspend fun linkAuthUid(attendeeId: String, authUid: String): Result<Unit> {
+        return runSuspendCatching {
+            remoteDataSource.updateAuthUid(attendeeId, authUid)
+        }
     }
 }

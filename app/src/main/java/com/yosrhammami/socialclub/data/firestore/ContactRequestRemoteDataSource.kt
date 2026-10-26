@@ -3,7 +3,6 @@ package com.yosrhammami.socialclub.data.firestore
 import com.google.firebase.firestore.FirebaseFirestore
 import com.yosrhammami.socialclub.data.remote.ContactRequestDto
 import com.yosrhammami.socialclub.domain.model.ContactRequest
-import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -14,20 +13,13 @@ class ContactRequestRemoteDataSource @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
 
-    suspend fun send(dto: ContactRequestDto) {
-        firestore.collection("contactRequests")
-            .document(dto.id)
-            .set(dto)
-            .await()
-    }
-
     fun getContactRequest(
-        fromAttendeeId: String,
-        toAttendeeId: String
+        senderAuthUid: String,
+        receiverAuthUid: String
     ): Flow<ContactRequestDto?> = callbackFlow {
         val id = ContactRequest.generateId(
-            fromAttendeeId,
-            toAttendeeId
+            senderAuthUid,
+            receiverAuthUid
         )
 
         val listener = firestore.collection("contactRequests")
@@ -37,30 +29,44 @@ class ContactRequestRemoteDataSource @Inject constructor(
                     close(error)
                     return@addSnapshotListener
                 }
-                trySend(snapshot?.toObject(ContactRequestDto::class.java))
+                // This callback runs on Firestore's thread, outside the flow's coroutine: an exception
+                // thrown here (toObject() on a mistyped field, e.g. createdAt stored as a Timestamp)
+                // would crash the app, unreachable by any try/catch around collect. close(e) routes it
+                // into the flow instead, exactly like the listener error above.
+                val dto = try {
+                    snapshot?.toObject(ContactRequestDto::class.java)
+                } catch (e: Exception) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                trySend(dto)
             }
 
         awaitClose {listener.remove()}
     }
 
-    suspend fun updateContactRequest(
-        fromAttendeeId: String,
-        toAttendeeId: String,
-        status: ContactRequestStatus
+    /*
+    Read, decide and write in one transaction: if the document changes between our read and our
+    write, Firestore retries the whole block with the fresh document, so [change] always decides on
+    what's actually stored. A refusal from [change] is returned from the block (not thrown) so
+    nothing is written, then thrown after await() for the repository to wrap as a Result.
+     */
+    suspend fun modifyAtomically(
+        id: String,
+        change: (current: ContactRequestDto?) -> Result<ContactRequestDto>
     ) {
-
-        val id = ContactRequest.generateId(
-            fromAttendeeId,
-            toAttendeeId
-        )
-        firestore.collection("contactRequests")
-            .document(id)
-            .update(
-                "status",
-                status.name
+        val ref = firestore.collection("contactRequests").document(id)
+        val refusal: Throwable? = firestore.runTransaction { transaction ->
+            val current = transaction.get(ref).toObject(ContactRequestDto::class.java)
+            change(current).fold(
+                onSuccess = { updated ->
+                    transaction.set(ref, updated)
+                    null
+                },
+                onFailure = { it }
             )
-            .await()
-
+        }.await()
+        if (refusal != null) throw refusal
     }
 }/*
 callbackFlow { } = builds a Flow from a listener (like addSnapshotListener).

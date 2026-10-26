@@ -12,6 +12,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
@@ -26,7 +27,8 @@ fun AppTextField(
     isError: Boolean = false,
     errorMessage: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
     Column(modifier = modifier) {
         TextField(
@@ -35,6 +37,7 @@ fun AppTextField(
             label = {Text(label)},
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             singleLine = singleLine,
+            visualTransformation = visualTransformation,
             isError = isError,
             shape = RoundedCornerShape(
                 topStart = 16.dp,

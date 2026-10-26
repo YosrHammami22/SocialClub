@@ -26,7 +26,9 @@ class AttendeeViewModelTest{
     private val fakeRepository = mockk<AttendeeRepository>()
     private val fakeUseCase = mockk<GetAttendeeWithRegistrationsUseCase>()
     private val fakeLogger = FakeLogger()
-    private val fakeSession = mockk<SessionManager>()
+    // A real SessionManager, not a mock: it has no interface and no dependencies, and a strict mock
+    // threw on setCurrentAttendee(), which the ViewModel caught and turned into an Error state.
+    private val fakeSession = SessionManager()
     private fun createViewModel(email: String = "jane@test.com"): AttendeeViewModel {
         val savedStateHandle = SavedStateHandle(mapOf("email" to email))
         return AttendeeViewModel(getAttendeeWithRegistrationsUseCase=fakeUseCase,sessionManager=fakeSession, logger=fakeLogger, savedStateHandle)
@@ -64,6 +66,7 @@ class AttendeeViewModelTest{
         assertTrue(state is AttendeeUiState.Success)
         assertEquals(jane, (state as AttendeeUiState.Success).attendee)
         assertEquals(registrations, state.registrations)
+        assertEquals(jane, fakeSession.currentAttendee.value)
     }
     @Test
     fun `when attendee is not found, uiState becomes AttendeeNotFound`() = runTest {

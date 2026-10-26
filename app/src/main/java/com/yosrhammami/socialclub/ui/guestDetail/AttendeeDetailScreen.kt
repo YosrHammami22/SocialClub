@@ -26,33 +26,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.ContactRequestButtonState
+import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import com.yosrhammami.socialclub.ui.components.AppAvatar
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
 import com.yosrhammami.socialclub.ui.components.AppSecondaryButton
+import com.yosrhammami.socialclub.ui.components.AppTopBar
 import com.yosrhammami.socialclub.ui.components.BodyText
 import com.yosrhammami.socialclub.ui.components.CaptionText
 import com.yosrhammami.socialclub.ui.components.ErrorText
 import com.yosrhammami.socialclub.ui.components.LabelText
 import com.yosrhammami.socialclub.ui.components.TitleText
-import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
+import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
-import com.yosrhammami.socialclub.R
-import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 
 // Stateful — used by navigation, connects to the real ViewModel
 @Composable
-fun AttendeeDetailScreen(viewModel: AttendeeDetailViewModel = hiltViewModel()) {
+fun AttendeeDetailScreen(
+    onBackClick: () -> Unit,
+    viewModel: AttendeeDetailViewModel = hiltViewModel()
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LaunchedEffect(Unit) { viewModel.errorEvent.collect { message ->
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }}
-    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest)
+    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest, onBackClick = onBackClick)
 }
 
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
@@ -60,10 +64,16 @@ fun AttendeeDetailScreen(viewModel: AttendeeDetailViewModel = hiltViewModel()) {
 fun AttendeeDetailContent(
     uiState: AttendeeDetailUiState,
     onSendRequestClick: () -> Unit,
-    onRespondToRequest: (ContactRequestStatus) -> Unit
+    onRespondToRequest: (ContactRequestStatus) -> Unit,
+    onBackClick: (() -> Unit)? = null
 ) {
+    Column(Modifier.fillMaxSize()) {
+    // Back only, no title: the guest's name is already the large title under the avatar,
+    // repeating it in the bar would just be noise. Outside the Crossfade so it never fades.
+    AppTopBar(title = "", onBackClick = onBackClick)
     Crossfade(
         targetState = uiState,
+        modifier = Modifier.weight(1f),
         label = "guest detail"
     ) {state ->
         when (state) {
@@ -83,8 +93,6 @@ fun AttendeeDetailContent(
                         .padding(Spacing.lg),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(Modifier.height(Spacing.lg))
-
                     AppAvatar(
                         name = state.guestAttendee.fullName,
                         photoUrl = state.guestAttendee.photoUrl,
@@ -157,6 +165,7 @@ fun AttendeeDetailContent(
             }
         }
     }
+    }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -222,6 +231,10 @@ private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,o
             BodyText(text = stringResource(id = R.string.contact_request_accepted))
         }
 
+        ContactRequestButtonState.GuestHasNoAccount -> {
+            BodyText(text = stringResource(id = R.string.contact_request_guest_has_no_account))
+        }
+
         ContactRequestButtonState.Unknown, ContactRequestButtonState.Declined -> {
             // nothing shown
         }
@@ -253,7 +266,8 @@ fun AttendeeDetailSuccessPreview() {
                     contactButtonState = ContactRequestButtonState.NoRequest
                 ),
                 onSendRequestClick = {},
-                onRespondToRequest = {}
+                onRespondToRequest = {},
+                onBackClick = {}
             )
         }
     }
@@ -279,7 +293,34 @@ fun AttendeeDetailNoTagsPreview() {
                     contactButtonState = ContactRequestButtonState.PendingReceiver
                 ),
                 onSendRequestClick = {},
-                onRespondToRequest = {}
+                onRespondToRequest = {},
+                onBackClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun AttendeeDetailGuestHasNoAccountPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.Success(
+                    guestAttendee = Attendee(
+                        id = "3",
+                        fullName = "Camille Martin",
+                        email = "camille.martin@example.com",
+                        photoUrl = "https://randomuser.me/api/portraits/women/68.jpg",
+                        age = 27,
+                        prompt = "UX designer, coffee snob, always up for a museum visit.",
+                        tags = listOf("design", "coffee", "art")
+                    ),
+                    contactButtonState = ContactRequestButtonState.GuestHasNoAccount
+                ),
+                onSendRequestClick = {},
+                onRespondToRequest = {},
+                onBackClick = {}
             )
         }
     }
@@ -291,7 +332,7 @@ fun AttendeeDetailNoTagsPreview() {
 fun AttendeeDetailLoadingPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {}, onBackClick = {})
         }
     }
 }
@@ -302,7 +343,7 @@ fun AttendeeDetailLoadingPreview() {
 fun AttendeeDetailErrorPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {}, onBackClick = {})
         }
     }
 }
@@ -316,7 +357,8 @@ fun AttendeeDetailNotFoundPreview() {
             AttendeeDetailContent(
                 uiState = AttendeeDetailUiState.AttendeeNotFound,
                 onSendRequestClick = {},
-                onRespondToRequest = {}
+                onRespondToRequest = {},
+                onBackClick = {}
             )
         }
     }

@@ -10,7 +10,6 @@ import com.yosrhammami.socialclub.ui.FakeGenerateIcebreaker
 import com.yosrhammami.socialclub.ui.personDetail.uiState.PersonDetailUiState
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
-
 import org.junit.Rule
 import org.junit.Test
 

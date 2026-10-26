@@ -6,5 +6,6 @@ enum class ContactRequestButtonState {
     PendingReceiver,
     Declined,
     Accepted,
+    GuestHasNoAccount,  // guestAttendee has no authUid yet: nobody to send a request to
     Unknown
 }

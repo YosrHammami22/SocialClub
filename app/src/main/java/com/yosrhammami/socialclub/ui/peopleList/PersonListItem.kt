@@ -16,12 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.yosrhammami.socialclub.domain.model.Person
-import androidx.compose.ui.semantics.semantics
-import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Gender
+import com.yosrhammami.socialclub.domain.model.Person
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.toPlaceholderDrawable
