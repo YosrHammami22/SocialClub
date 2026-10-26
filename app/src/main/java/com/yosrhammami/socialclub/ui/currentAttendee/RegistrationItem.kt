@@ -27,8 +27,8 @@ import com.yosrhammami.socialclub.ui.components.AppCard
 import com.yosrhammami.socialclub.ui.components.CaptionText
 import com.yosrhammami.socialclub.ui.components.LabelText
 import com.yosrhammami.socialclub.ui.components.SubtitleText
-import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
+import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 import com.yosrhammami.socialclub.ui.util.formatDate
 

@@ -11,10 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -30,7 +32,8 @@ fun AppAvatar(
     photoUrl: String? = null,
     size: Dp = 48.dp,
     onClick: (() -> Unit)? = null,
-    onClickLabel: String? = null
+    onClickLabel: String? = null,
+    contentDescription: String? = null
 ) {
     // clickable goes after clip so the ripple is circular, not a square around the avatar.
     // Only applied when onClick is set: a decorative avatar must not be announced as a button.
@@ -39,7 +42,11 @@ fun AppAvatar(
         .clip(CircleShape)
         .then(
             if (onClick != null) {
-                Modifier.clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                // The image itself stays decorative (contentDescription = null below), so the
+                // button needs its own name here, otherwise TalkBack announces just "Button".
+                Modifier
+                    .clickable(onClickLabel = onClickLabel, role = Role.Button, onClick = onClick)
+                    .semantics { contentDescription?.let { this.contentDescription = it } }
             } else {
                 Modifier
             }
@@ -59,8 +66,11 @@ fun AppAvatar(
                 .background(MaterialTheme.colorScheme.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
+            // When a contentDescription names the button, the initial letter is just decoration:
+            // hide it so TalkBack reads "Settings, button", not "Settings, J, button".
             Text(
                 text = name.firstOrNull()?.uppercase() ?: "?",
+                modifier = if (contentDescription != null) Modifier.clearAndSetSemantics {} else Modifier,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
@@ -86,7 +96,8 @@ fun PreviewAppAvatarClickable() {
             photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
             size = 64.dp,
             onClick = {},
-            onClickLabel = "View profile"
+            onClickLabel = "View profile",
+            contentDescription = "Amira Ben Salah"
         )
     }
 }

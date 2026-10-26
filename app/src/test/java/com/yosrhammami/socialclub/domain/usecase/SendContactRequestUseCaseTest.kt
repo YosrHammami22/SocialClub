@@ -2,7 +2,6 @@ package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.FakeContactRequestRepository
 import com.yosrhammami.socialclub.domain.model.ContactRequest
-import com.yosrhammami.socialclub.domain.model.ContactRequestException
 import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*

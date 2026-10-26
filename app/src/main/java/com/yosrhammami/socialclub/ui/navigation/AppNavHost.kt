@@ -1,7 +1,6 @@
 package com.yosrhammami.socialclub.ui.navigation
 
 import HomeScreen
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
@@ -9,27 +8,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.core.util.Logger
 import com.yosrhammami.socialclub.ui.createPassword.CreatePasswordScreen
-import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
 import com.yosrhammami.socialclub.ui.currentAttendee.AttendeeScreen
+import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
 import com.yosrhammami.socialclub.ui.guestList.EventAttendeesScreen
 import com.yosrhammami.socialclub.ui.peopleList.PeopleListScreen
 import com.yosrhammami.socialclub.ui.personDetail.PersonDetailScreen

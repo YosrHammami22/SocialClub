@@ -28,8 +28,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.domain.model.Attendee
 import com.yosrhammami.socialclub.domain.model.ContactRequestButtonState
+import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import com.yosrhammami.socialclub.ui.components.AppAvatar
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
 import com.yosrhammami.socialclub.ui.components.AppSecondaryButton
@@ -39,11 +41,9 @@ import com.yosrhammami.socialclub.ui.components.CaptionText
 import com.yosrhammami.socialclub.ui.components.ErrorText
 import com.yosrhammami.socialclub.ui.components.LabelText
 import com.yosrhammami.socialclub.ui.components.TitleText
-import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
+import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
-import com.yosrhammami.socialclub.R
-import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 
 // Stateful — used by navigation, connects to the real ViewModel
 @Composable
