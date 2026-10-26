@@ -36,5 +36,6 @@
     <string name="settings_logging_out">Logging out</string>
     <string name="settings_open">Settings</string>
     <string name="navigate_back">Back</string>
+    <string name="event_attendees_title">Guests</string>
     <string name="session_expired">Your session has expired. Please sign in again.</string>
 </resources>

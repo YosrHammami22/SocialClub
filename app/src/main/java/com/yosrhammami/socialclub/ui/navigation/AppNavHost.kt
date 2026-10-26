@@ -1,14 +1,19 @@
 package com.yosrhammami.socialclub.ui.navigation
 
 import HomeScreen
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,6 +23,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.toRoute
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.core.util.Logger
@@ -63,7 +69,9 @@ fun AppNavHost(
     Box(Modifier.fillMaxSize()) {
         NavHost(
             navController = navController,
-            startDestination = HomeRoute
+            startDestination = HomeRoute,
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None }
         ) {
             composable<HomeRoute> {
                 // The NavHost only maps outcomes to routes; which outcome applies (session or not)
@@ -113,13 +121,21 @@ fun AppNavHost(
                     navController.navigateToAttendeeClearingBackStack(email)
                 })   // email comes automatically via SavedStateHandle
             }
-            composable<EventAttendeesRoute> {
-                EventAttendeesScreen( onGuestClick = { guestId ->
-                    navController.navigate(AttendeeDetailRoute(attendeeId = guestId))
-                })   // eventId comes automatically via SavedStateHandle
+            composable<EventAttendeesRoute>(
+
+            ) {
+
+                    EventAttendeesScreen(
+                        onGuestClick = { guestId ->
+                            navController.navigate(AttendeeDetailRoute(attendeeId = guestId))
+                        },
+                        onBackClick = { navController.popBackStack() }
+                    )   // eventId comes automatically via SavedStateHandle
+
+
             }
             composable<AttendeeDetailRoute> {
-                AttendeeDetailScreen()
+                AttendeeDetailScreen(onBackClick = { navController.popBackStack() })
             }
 
             composable<PeopleListRoute> {
@@ -133,6 +149,7 @@ fun AppNavHost(
             }
 
         }
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding()
