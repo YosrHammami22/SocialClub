@@ -1,5 +1,4 @@
 import android.content.Context
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +19,8 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.core.content.pm.PackageInfoCompat
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppPrimaryButton
@@ -151,12 +151,9 @@ fun AboutScreen(context: Context = LocalContext.current) {
         0
     )
     val version = packageInfo.versionName ?: ""
-    val code = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        packageInfo.longVersionCode
-    }
-    else {
-        packageInfo.versionCode.toLong()
-    }
+    // PackageInfoCompat does the API 28 longVersionCode / legacy versionCode switch for us,
+    // so there's no deprecated field access left in our code.
+    val code = PackageInfoCompat.getLongVersionCode(packageInfo)
     CaptionText(  text = "Version $version ($code)",)
 }
 

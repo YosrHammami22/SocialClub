@@ -77,8 +77,8 @@ dependencies {
     // Hilt dependencies
     implementation(libs.hilt.android)
     kapt(libs.hilt.compiler)
-    // Hilt with Compose Navigation
-    implementation(libs.hilt.navigation.compose)
+    // hiltViewModel() for Compose (works with Nav2 back stack entries)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     // serialization
     implementation(libs.kotlinx.serialization.json)
