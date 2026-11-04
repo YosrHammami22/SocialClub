@@ -131,7 +131,10 @@ fun AppNavHost(
 
             }
             composable<AttendeeDetailRoute> {
-                AttendeeDetailScreen(onBackClick = { navController.popBackStack() })
+                AttendeeDetailScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onMessageClick = { /* TODO chat S2: navigate to ChatRoute once ChatScreen exists */ }
+                )
             }
 
             composable<PeopleListRoute> {

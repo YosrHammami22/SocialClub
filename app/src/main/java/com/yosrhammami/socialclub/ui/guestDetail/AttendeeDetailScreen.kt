@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -49,6 +51,7 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 @Composable
 fun AttendeeDetailScreen(
     onBackClick: () -> Unit,
+    onMessageClick: () -> Unit,
     viewModel: AttendeeDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,7 +59,7 @@ fun AttendeeDetailScreen(
     LaunchedEffect(Unit) { viewModel.errorEvent.collect { message ->
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }}
-    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest, onBackClick = onBackClick)
+    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest, onMessageClick = onMessageClick, onBackClick = onBackClick)
 }
 
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
@@ -65,6 +68,7 @@ fun AttendeeDetailContent(
     uiState: AttendeeDetailUiState,
     onSendRequestClick: () -> Unit,
     onRespondToRequest: (ContactRequestStatus) -> Unit,
+    onMessageClick: () -> Unit,
     onBackClick: (() -> Unit)? = null
 ) {
     Column(Modifier.fillMaxSize()) {
@@ -133,7 +137,13 @@ fun AttendeeDetailContent(
                     }
 
                     Spacer(Modifier.height(Spacing.lg))
-                    ContactActionButtons(contactButtonState = state.contactButtonState,onClick=onSendRequestClick,onClickListener=onRespondToRequest)
+                    ContactActionButtons(
+                        contactButtonState = state.contactButtonState,
+                        guestName = state.guestAttendee.fullName,
+                        onClick = onSendRequestClick,
+                        onClickListener = onRespondToRequest,
+                        onMessageClick = onMessageClick
+                    )
                 }
             }
 
@@ -190,7 +200,13 @@ private fun TagRow(tags: List<String>) {
     }
 }
 @Composable
-private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,onClick:()->Unit, onClickListener: (ContactRequestStatus) -> Unit) {
+private fun ContactActionButtons(
+    contactButtonState: ContactRequestButtonState,
+    guestName: String,
+    onClick: () -> Unit,
+    onClickListener: (ContactRequestStatus) -> Unit,
+    onMessageClick: () -> Unit
+) {
     when (contactButtonState) {
         ContactRequestButtonState.NoRequest -> {
             AppPrimaryButton(
@@ -228,7 +244,25 @@ private fun ContactActionButtons(contactButtonState: ContactRequestButtonState,o
         }
 
         ContactRequestButtonState.Accepted -> {
-            BodyText(text = stringResource(id = R.string.contact_request_accepted))
+            // Messaging is only offered once both sides accepted: the contact request is the
+            // consent gate, so the button simply doesn't exist in any other state (not disabled).
+            val messageDescription = stringResource(R.string.chat_message_button_description, guestName)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(Spacing.sm)
+            ) {
+                BodyText(text = stringResource(id = R.string.contact_request_accepted))
+                // "Message" alone is ambiguous for a screen reader user who landed here
+                // mid-flow, so TalkBack announces who the message goes to.
+                AppPrimaryButton(
+                    text = stringResource(id = R.string.chat_message_button),
+                    onClick = onMessageClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics { contentDescription = messageDescription }
+                )
+            }
         }
 
         ContactRequestButtonState.GuestHasNoAccount -> {
@@ -267,6 +301,35 @@ fun AttendeeDetailSuccessPreview() {
                 ),
                 onSendRequestClick = {},
                 onRespondToRequest = {},
+                onMessageClick = {},
+                onBackClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun AttendeeDetailAcceptedPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.Success(
+                    guestAttendee = Attendee(
+                        id = "4",
+                        fullName = "Lucas Bernard",
+                        email = "lucas.bernard@example.com",
+                        photoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
+                        age = 29,
+                        prompt = "Backend engineer by day, amateur jazz pianist by night. Ask me about sourdough.",
+                        tags = listOf("kotlin", "jazz", "cooking"),
+                        authUid = "lucasAuthUid123"
+                    ),
+                    contactButtonState = ContactRequestButtonState.Accepted
+                ),
+                onSendRequestClick = {},
+                onRespondToRequest = {},
+                onMessageClick = {},
                 onBackClick = {}
             )
         }
@@ -294,6 +357,7 @@ fun AttendeeDetailNoTagsPreview() {
                 ),
                 onSendRequestClick = {},
                 onRespondToRequest = {},
+                onMessageClick = {},
                 onBackClick = {}
             )
         }
@@ -320,6 +384,7 @@ fun AttendeeDetailGuestHasNoAccountPreview() {
                 ),
                 onSendRequestClick = {},
                 onRespondToRequest = {},
+                onMessageClick = {},
                 onBackClick = {}
             )
         }
@@ -332,7 +397,7 @@ fun AttendeeDetailGuestHasNoAccountPreview() {
 fun AttendeeDetailLoadingPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {}, onBackClick = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {}, onMessageClick = {}, onBackClick = {})
         }
     }
 }
@@ -343,7 +408,7 @@ fun AttendeeDetailLoadingPreview() {
 fun AttendeeDetailErrorPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {}, onBackClick = {})
+            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {}, onMessageClick = {}, onBackClick = {})
         }
     }
 }
@@ -358,6 +423,7 @@ fun AttendeeDetailNotFoundPreview() {
                 uiState = AttendeeDetailUiState.AttendeeNotFound,
                 onSendRequestClick = {},
                 onRespondToRequest = {},
+                onMessageClick = {},
                 onBackClick = {}
             )
         }
