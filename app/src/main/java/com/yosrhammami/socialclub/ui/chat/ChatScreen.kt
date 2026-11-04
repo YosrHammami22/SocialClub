@@ -73,9 +73,9 @@ fun ChatContent(
     receiverPhotoUrl: String?,
     uiState: ChatUiState,
     draft: String,
-    onDraftChange: (String) -> Unit,
-    onSendClick: () -> Unit,
-    onBackClick: () -> Unit,
+    onTextChange: (String) -> Unit,
+    onSend: () -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier.fillMaxSize()) {
@@ -83,7 +83,7 @@ fun ChatContent(
         ChatTopBar(
             receiverName = receiverName,
             receiverPhotoUrl = receiverPhotoUrl,
-            onBackClick = onBackClick
+            onBack = onBack
         )
         // AnimatedContent rather than Crossfade (used elsewhere) for one reason: contentKey.
         // Loading → Content fades, but Content → Content (a new message arrived) and
@@ -125,8 +125,8 @@ fun ChatContent(
         when (uiState) {
             is ChatUiState.Empty, is ChatUiState.Content -> ChatInputBar(
                 draft = draft,
-                onDraftChange = onDraftChange,
-                onSendClick = onSendClick
+                onTextChange = onTextChange,
+                onSend = onSend
             )
             // The notice takes the input bar's place: the reason sits exactly where the user
             // would otherwise try to type.
@@ -200,7 +200,7 @@ private fun EmptyConversation(receiverName: String) {
 private fun ChatTopBar(
     receiverName: String,
     receiverPhotoUrl: String?,
-    onBackClick: () -> Unit
+    onBack: () -> Unit
 ) {
     TopAppBar(
         title = {
@@ -219,7 +219,7 @@ private fun ChatTopBar(
             }
         },
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
+            IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_back),
                     contentDescription = stringResource(R.string.navigate_back)
@@ -236,7 +236,7 @@ private fun ChatTopBar(
 
 @Composable
 private fun MessageList(
-    messages: List<ChatMessageUi>,
+    messages: List<MessageUi>,
     receiverName: String,
     modifier: Modifier = Modifier
 ) {
@@ -263,7 +263,7 @@ private fun MessageList(
 
 @Composable
 private fun MessageBubble(
-    message: ChatMessageUi,
+    message: MessageUi,
     receiverName: String
 ) {
     val containerColor: Color
@@ -286,9 +286,9 @@ private fun MessageBubble(
     // screen reader user couldn't tell the two sides apart, since alignment and color are visual only.
     val sending = stringResource(R.string.chat_sending)
     val baseDescription = if (message.isMine) {
-        stringResource(R.string.chat_bubble_mine_description, message.sentTime, message.text)
+        stringResource(R.string.chat_bubble_mine_description, message.time, message.text)
     } else {
-        stringResource(R.string.chat_bubble_theirs_description, receiverName, message.sentTime, message.text)
+        stringResource(R.string.chat_bubble_theirs_description, receiverName, message.time, message.text)
     }
     val description = if (message.isPending) "$baseDescription, $sending" else baseDescription
 
@@ -329,7 +329,7 @@ private fun MessageBubble(
                             color = contentColor.copy(alpha = 0.7f)
                         )
                     }
-                    CaptionText(text = message.sentTime, color = contentColor.copy(alpha = 0.7f))
+                    CaptionText(text = message.time, color = contentColor.copy(alpha = 0.7f))
                 }
             }
         }
@@ -339,8 +339,8 @@ private fun MessageBubble(
 @Composable
 private fun ChatInputBar(
     draft: String,
-    onDraftChange: (String) -> Unit,
-    onSendClick: () -> Unit
+    onTextChange: (String) -> Unit,
+    onSend: () -> Unit
 ) {
     // Blank = empty or whitespace only: sending "   " would create an invisible bubble.
     val canSend = draft.isNotBlank()
@@ -364,7 +364,7 @@ private fun ChatInputBar(
         // pill shape is the conventional composer look rather than the filled-field spec.
         TextField(
             value = draft,
-            onValueChange = onDraftChange,
+            onValueChange = onTextChange,
             placeholder = { Text(stringResource(R.string.chat_input_placeholder)) },
             // Grows with content up to 4 lines, then TextField scrolls internally.
             minLines = 1,
@@ -383,7 +383,7 @@ private fun ChatInputBar(
         // Disabled rather than hidden: the button stays where the user expects it, and TalkBack
         // still finds it and announces "disabled", which explains why nothing happens.
         FilledIconButton(
-            onClick = onSendClick,
+            onClick = onSend,
             enabled = canSend,
             modifier = Modifier
                 .padding(bottom = Spacing.xs)
@@ -400,21 +400,21 @@ private fun ChatInputBar(
 // ---------- Previews ----------
 
 private val previewMessages = listOf(
-    ChatMessageUi("1", "Hey Lucas! Great meeting you at the rooftop mixer yesterday.", "18:42", isMine = true),
-    ChatMessageUi("2", "Likewise! Still thinking about that sourdough debate 😄", "18:45", isMine = false),
-    ChatMessageUi("3", "Ha, I stand by it. Are you going to the Kotlin meetup on Thursday?", "18:46", isMine = true),
-    ChatMessageUi(
+    MessageUi("1", "Hey Lucas! Great meeting you at the rooftop mixer yesterday.", "18:42", isMine = true),
+    MessageUi("2", "Likewise! Still thinking about that sourdough debate 😄", "18:45", isMine = false),
+    MessageUi("3", "Ha, I stand by it. Are you going to the Kotlin meetup on Thursday?", "18:46", isMine = true),
+    MessageUi(
         "4",
         "Yes, I'll be there around 7. They're doing a talk on Compose performance, then drinks at the bar across the street.",
         "18:51",
         isMine = false
     ),
-    ChatMessageUi("5", "Perfect, see you there!", "18:52", isMine = true, isPending = true)
+    MessageUi("5", "Perfect, see you there!", "18:52", isMine = true, isPending = true)
 )
 
 @ThemePreviews
 @Composable
-fun ChatContentPreview() {
+fun ChatContentWithMessagesPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
             ChatContent(
@@ -422,9 +422,9 @@ fun ChatContentPreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
                 uiState = ChatUiState.Content(previewMessages),
                 draft = "",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
@@ -444,9 +444,9 @@ fun ChatContentLongDraftPreview() {
                     "I might be a bit late because of work, and I'd hate to miss the part about " +
                     "recomposition. Also, should I bring my laptop for the workshop afterwards, " +
                     "or is it just a discussion?",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
@@ -462,9 +462,9 @@ fun ChatContentEmptyPreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
                 uiState = ChatUiState.Empty,
                 draft = "Hi Amira!",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
@@ -482,9 +482,9 @@ fun ChatContentInteractivePreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
                 uiState = ChatUiState.Content(previewMessages),
                 draft = draft,
-                onDraftChange = { draft = it },
-                onSendClick = { draft = "" },
-                onBackClick = {}
+                onTextChange = { draft = it },
+                onSend = { draft = "" },
+                onBack = {}
             )
         }
     }
@@ -500,9 +500,9 @@ fun ChatContentLoadingPreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
                 uiState = ChatUiState.Loading,
                 draft = "",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
@@ -518,9 +518,9 @@ fun ChatContentBlockedPreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/women/68.jpg",
                 uiState = ChatUiState.Blocked(previewMessages.take(4)),
                 draft = "",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
@@ -536,9 +536,9 @@ fun ChatContentErrorPreview() {
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
                 uiState = ChatUiState.Error("Couldn't load this conversation. Check your connection and try again."),
                 draft = "",
-                onDraftChange = {},
-                onSendClick = {},
-                onBackClick = {}
+                onTextChange = {},
+                onSend = {},
+                onBack = {}
             )
         }
     }
