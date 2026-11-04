@@ -1,6 +1,11 @@
 package com.yosrhammami.socialclub.ui.chat
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,16 +44,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppAvatar
 import com.yosrhammami.socialclub.ui.components.BodyText
 import com.yosrhammami.socialclub.ui.components.CaptionText
+import com.yosrhammami.socialclub.ui.components.ErrorText
+import com.yosrhammami.socialclub.ui.components.SubtitleText
 import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
@@ -61,7 +71,7 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 fun ChatContent(
     receiverName: String,
     receiverPhotoUrl: String?,
-    messages: List<ChatMessageUi>,
+    uiState: ChatUiState,
     draft: String,
     onDraftChange: (String) -> Unit,
     onSendClick: () -> Unit,
@@ -69,21 +79,114 @@ fun ChatContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier.fillMaxSize()) {
+        // Outside the animated body: who you're talking to never fades in and out between states.
         ChatTopBar(
             receiverName = receiverName,
             receiverPhotoUrl = receiverPhotoUrl,
             onBackClick = onBackClick
         )
-        MessageList(
-            messages = messages,
-            receiverName = receiverName,
-            modifier = Modifier.weight(1f)
+        // AnimatedContent rather than Crossfade (used elsewhere) for one reason: contentKey.
+        // Loading → Content fades, but Content → Content (a new message arrived) and
+        // Content → Blocked (contact removed mid-conversation) share a key, so the same
+        // LazyColumn stays in place — no full-list fade, scroll position kept.
+        AnimatedContent(
+            targetState = uiState,
+            transitionSpec = { fadeIn() togetherWith fadeOut() },
+            contentKey = { state ->
+                when (state) {
+                    is ChatUiState.Content, is ChatUiState.Blocked -> "messages"
+                    else -> state::class
+                }
+            },
+            modifier = Modifier.weight(1f),
+            label = "chat body"
+        ) { state ->
+            when (state) {
+                ChatUiState.Loading -> CenteredBox { CircularProgressIndicator() }
+
+                ChatUiState.Empty -> EmptyConversation(receiverName = receiverName)
+
+                is ChatUiState.Content -> MessageList(
+                    messages = state.messages,
+                    receiverName = receiverName
+                )
+
+                // History stays readable: losing the contact shouldn't erase what was said.
+                is ChatUiState.Blocked -> MessageList(
+                    messages = state.messages,
+                    receiverName = receiverName
+                )
+
+                is ChatUiState.Error -> CenteredBox { ErrorText(text = state.message) }
+            }
+        }
+        // Outside the animated body so the field (and the keyboard) isn't torn down when the first
+        // message moves the state from Empty to Content.
+        when (uiState) {
+            is ChatUiState.Empty, is ChatUiState.Content -> ChatInputBar(
+                draft = draft,
+                onDraftChange = onDraftChange,
+                onSendClick = onSendClick
+            )
+            // The notice takes the input bar's place: the reason sits exactly where the user
+            // would otherwise try to type.
+            is ChatUiState.Blocked -> BlockedNotice(receiverName = receiverName)
+            // Loading/Error: a message typed before the conversation is known has nowhere
+            // reliable to go. The input bar normally owns the nav-bar inset, so keep that.
+            ChatUiState.Loading, is ChatUiState.Error -> Spacer(Modifier.navigationBarsPadding())
+        }
+    }
+}
+
+@Composable
+private fun BlockedNotice(receiverName: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        BodyText(
+            text = stringResource(R.string.chat_blocked, receiverName),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = Spacing.lg, vertical = Spacing.md)
+                // Polite live region: if the contact becomes unavailable while the screen is
+                // open, TalkBack announces it instead of the input silently vanishing.
+                .semantics { liveRegion = LiveRegionMode.Polite }
         )
-        ChatInputBar(
-            draft = draft,
-            onDraftChange = onDraftChange,
-            onSendClick = onSendClick
-        )
+    }
+}
+
+@Composable
+private fun CenteredBox(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Spacing.lg),
+        contentAlignment = Alignment.Center
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun EmptyConversation(receiverName: String) {
+    CenteredBox {
+        // One TalkBack stop for title + invitation, read as a single sentence.
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.xs),
+            modifier = Modifier.semantics(mergeDescendants = true) {}
+        ) {
+            SubtitleText(text = stringResource(R.string.chat_empty_title))
+            BodyText(
+                text = stringResource(R.string.chat_empty_body, receiverName),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -143,7 +246,9 @@ private fun MessageList(
     // bottom-up, so the chronological list is read through a reversed view (asReversed() is a
     // view, not a copy).
     LazyColumn(
-        modifier = modifier.fillMaxWidth(),
+        // fillMaxSize, not fillMaxWidth: a LazyColumn wraps its height, and a short
+        // conversation would then float at the top instead of sitting above the input bar.
+        modifier = modifier.fillMaxSize(),
         reverseLayout = true,
         contentPadding = PaddingValues(horizontal = Spacing.md, vertical = Spacing.sm),
         verticalArrangement = Arrangement.spacedBy(Spacing.xs)
@@ -315,7 +420,7 @@ fun ChatContentPreview() {
             ChatContent(
                 receiverName = "Lucas Bernard",
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
-                messages = previewMessages,
+                uiState = ChatUiState.Content(previewMessages),
                 draft = "",
                 onDraftChange = {},
                 onSendClick = {},
@@ -334,7 +439,7 @@ fun ChatContentLongDraftPreview() {
             ChatContent(
                 receiverName = "Camille Martin",
                 receiverPhotoUrl = null,
-                messages = previewMessages.take(2),
+                uiState = ChatUiState.Content(previewMessages.take(2)),
                 draft = "Sounds great! Quick question though: do you know if they're recording the talk? " +
                     "I might be a bit late because of work, and I'd hate to miss the part about " +
                     "recomposition. Also, should I bring my laptop for the workshop afterwards, " +
@@ -355,7 +460,7 @@ fun ChatContentEmptyPreview() {
             ChatContent(
                 receiverName = "Amira Ben Salah",
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
-                messages = emptyList(),
+                uiState = ChatUiState.Empty,
                 draft = "Hi Amira!",
                 onDraftChange = {},
                 onSendClick = {},
@@ -375,10 +480,64 @@ fun ChatContentInteractivePreview() {
             ChatContent(
                 receiverName = "Lucas Bernard",
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
-                messages = previewMessages,
+                uiState = ChatUiState.Content(previewMessages),
                 draft = draft,
                 onDraftChange = { draft = it },
                 onSendClick = { draft = "" },
+                onBackClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun ChatContentLoadingPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ChatContent(
+                receiverName = "Lucas Bernard",
+                receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
+                uiState = ChatUiState.Loading,
+                draft = "",
+                onDraftChange = {},
+                onSendClick = {},
+                onBackClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun ChatContentBlockedPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ChatContent(
+                receiverName = "Camille Martin",
+                receiverPhotoUrl = "https://randomuser.me/api/portraits/women/68.jpg",
+                uiState = ChatUiState.Blocked(previewMessages.take(4)),
+                draft = "",
+                onDraftChange = {},
+                onSendClick = {},
+                onBackClick = {}
+            )
+        }
+    }
+}
+
+@ThemePreviews
+@Composable
+fun ChatContentErrorPreview() {
+    SocialClubTheme(dynamicColor = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ChatContent(
+                receiverName = "Lucas Bernard",
+                receiverPhotoUrl = "https://randomuser.me/api/portraits/men/32.jpg",
+                uiState = ChatUiState.Error("Couldn't load this conversation. Check your connection and try again."),
+                draft = "",
+                onDraftChange = {},
+                onSendClick = {},
                 onBackClick = {}
             )
         }

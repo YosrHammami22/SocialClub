@@ -40,6 +40,9 @@
     <string name="chat_sending">Sending</string>
     <string name="chat_bubble_mine_description">You, %1$s: %2$s</string>
     <string name="chat_bubble_theirs_description">%1$s, %2$s: %3$s</string>
+    <string name="chat_empty_title">No messages yet</string>
+    <string name="chat_empty_body">Say hi to %1$s and break the ice 👋</string>
+    <string name="chat_blocked">%1$s is no longer available. You can\'t send new messages in this conversation.</string>
     <string name="settings_title">Settings</string>
     <string name="settings_logout_button">Log out</string>
     <string name="settings_logging_out">Logging out</string>
