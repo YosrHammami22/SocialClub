@@ -33,6 +33,13 @@
     <string name="contact_request_guest_has_no_account">This person hasn\'t installed the app yet</string>
     <string name="chat_message_button">Message</string>
     <string name="chat_message_button_description">Send a message to %1$s</string>
+
+    <!-- Chat -->
+    <string name="chat_input_placeholder">Message</string>
+    <string name="chat_send_button">Send message</string>
+    <string name="chat_sending">Sending</string>
+    <string name="chat_bubble_mine_description">You, %1$s: %2$s</string>
+    <string name="chat_bubble_theirs_description">%1$s, %2$s: %3$s</string>
     <string name="settings_title">Settings</string>
     <string name="settings_logout_button">Log out</string>
     <string name="settings_logging_out">Logging out</string>
