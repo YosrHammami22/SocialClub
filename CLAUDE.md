@@ -146,12 +146,15 @@ attendee being viewed (event's guest list, or their detail screen).
   can't resolve inside `@Preview`.
 
 ## Testing conventions
-- JUnit4 + MockK + `kotlinx-coroutines-test`. **No Turbine** — plain
-  `viewModel.uiState.value` assertions after construction (most ViewModels
-  trigger their load in `init{}`, so construction alone is enough to
-  assert against) have been sufficient so far; revisit only if a test
-  genuinely needs to assert an intermediate emission, not just the final
-  state.
+- JUnit4 + MockK + `kotlinx-coroutines-test`. **Turbine only where it's
+  needed**: for `StateFlow` UI state, plain `viewModel.uiState.value`
+  assertions after construction stay the default (most ViewModels trigger
+  their load in `init{}`, so construction alone is enough to assert
+  against). Turbine (`flow.test { awaitItem() / awaitError() }`) is used
+  when a test must observe a stream itself: one-shot events
+  (`AttendeeDetailViewModel.errorEvent`), or a cold `Flow` returned by a
+  use case that must forward items unchanged or fail with an error
+  (`ObserveMessagesUseCase`).
 - `MainDispatcherRule` (in the shared test source set) swaps
   `Dispatchers.Main` for a test dispatcher around every test —
   **`UnconfinedTestDispatcher`** specifically (not `StandardTestDispatcher`),

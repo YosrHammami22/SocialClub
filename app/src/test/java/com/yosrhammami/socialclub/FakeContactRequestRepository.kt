@@ -1,6 +1,7 @@
 package com.yosrhammami.socialclub
 
 import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import com.yosrhammami.socialclub.domain.repository.ContactRequestRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -13,7 +14,7 @@ class FakeContactRequestRepository : ContactRequestRepository {
     var failure: Throwable? = null  // simulates Firestore itself failing (network, permission)
 
     override fun observeContactRequest(senderAuthUid: String, receiverAuthUid: String): Flow<ContactRequest?> {
-        return flowOf(requests[ContactRequest.generateId(senderAuthUid, receiverAuthUid)])
+        return flowOf(requests[pairIdOf(senderAuthUid, receiverAuthUid)])
     }
 
     override suspend fun modifyAtomically(

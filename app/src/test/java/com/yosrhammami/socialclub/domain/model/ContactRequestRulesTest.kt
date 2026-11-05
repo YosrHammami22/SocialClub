@@ -11,7 +11,7 @@ class ContactRequestRulesTest {
         receiver: String = "bob",
         status: ContactRequestStatus = ContactRequestStatus.PENDING
     ) = ContactRequest(
-        id = ContactRequest.generateId(sender, receiver),
+        id = pairIdOf(sender, receiver),
         senderAuthUid = sender,
         receiverAuthUid = receiver,
         status = status,

@@ -1,9 +1,9 @@
 package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.core.util.runSuspendCatching
-import com.yosrhammami.socialclub.domain.model.ContactRequest
 import com.yosrhammami.socialclub.domain.model.ContactRequestException
 import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import com.yosrhammami.socialclub.domain.repository.ContactRequestRepository
 import javax.inject.Inject
 
@@ -26,7 +26,7 @@ class UpdateContactRequestStatusUseCase @Inject constructor(
         if (status == ContactRequestStatus.PENDING) {
             return Result.failure(ContactRequestException.InvalidResponse())
         }
-        val id = runSuspendCatching { ContactRequest.generateId(currentAuthUid, otherAuthUid) }
+        val id = runSuspendCatching { pairIdOf(currentAuthUid, otherAuthUid) }
             .getOrElse { return Result.failure(it) }
 
         // Who may answer, and whether it's still PENDING, is checked against the current document

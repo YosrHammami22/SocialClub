@@ -2,6 +2,7 @@ package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.FakeContactRequestRepository
 import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -11,7 +12,7 @@ class SendContactRequestUseCaseTest {
     private val repository = FakeContactRequestRepository()
     private val useCase = SendContactRequestUseCase(repository)
 
-    private val pairId = ContactRequest.generateId("A1", "B2")
+    private val pairId = pairIdOf("A1", "B2")
 
     @Test
     fun `when senderId equals receiverId, request is rejected`() = runTest {

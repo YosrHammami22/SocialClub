@@ -2,7 +2,7 @@ package com.yosrhammami.socialclub.data.firestore
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.yosrhammami.socialclub.data.remote.ContactRequestDto
-import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -17,7 +17,7 @@ class ContactRequestRemoteDataSource @Inject constructor(
         senderAuthUid: String,
         receiverAuthUid: String
     ): Flow<ContactRequestDto?> = callbackFlow {
-        val id = ContactRequest.generateId(
+        val id = pairIdOf(
             senderAuthUid,
             receiverAuthUid
         )

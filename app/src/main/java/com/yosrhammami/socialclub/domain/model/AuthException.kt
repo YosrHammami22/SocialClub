@@ -33,6 +33,10 @@ sealed class AuthException(message: String, cause: Throwable? = null) : Exceptio
     class SignInFailed(cause: Throwable? = null) :
         AuthException("We couldn't sign you in. Please try again.", cause)
 
+    class NoSignedInUser(cause: Throwable? = null) :
+        AuthException("No signed-in user", cause)
+
+
     class Unknown(cause: Throwable? = null) :
         AuthException("We couldn't create your account. Please try again.", cause)
 }
