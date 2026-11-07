@@ -5,5 +5,6 @@ data class Message(
     val senderUid: String ,
     val text: String ,
     val sentAt: Long,
+    val isPending: Boolean
 )
 

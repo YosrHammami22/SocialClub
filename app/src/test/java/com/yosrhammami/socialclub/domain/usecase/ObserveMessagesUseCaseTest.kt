@@ -22,8 +22,8 @@ class ObserveMessagesUseCaseTest {
     private val authRepository = mockk<AuthRepository>()
     private val useCase = ObserveMessagesUseCase(chatRepository, authRepository)
 
-    private val firstBatch = listOf(Message("m1", "uidA", "Hi Lina!", sentAt = 1_000L))
-    private val secondBatch = firstBatch + Message("m2", "uidB", "Hey Sami, see you at the meetup?", sentAt = 2_000L)
+    private val firstBatch = listOf(Message("m1", "uidA", "Hi Lina!", sentAt = 1_000L, isPending = true))
+    private val secondBatch = firstBatch + Message("m2", "uidB", "Hey Sami, see you at the meetup?", sentAt = 2_000L, isPending = true)
 
     @Test
     fun `given a signed-in user when observing then the pair conversation is observed and lists are forwarded unchanged`() = runTest {
