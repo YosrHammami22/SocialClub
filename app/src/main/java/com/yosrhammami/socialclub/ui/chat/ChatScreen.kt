@@ -65,9 +65,6 @@ import com.yosrhammami.socialclub.ui.theme.SocialClubTheme
 import com.yosrhammami.socialclub.ui.theme.Spacing
 import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 
-// No stateful ChatScreen yet: S2 is UI-only. The Hilt-backed `ChatScreen` (collecting a
-// ViewModel's StateFlow and delegating here) arrives with the ViewModel story.
-
 @Composable
 fun ChatScreen(
     onBack: () -> Unit,
@@ -131,7 +128,6 @@ fun ChatContent(
                     receiverName = receiverName
                 )
 
-                // History stays readable: losing the contact shouldn't erase what was said.
                 is ChatUiState.Blocked -> CenteredBox { }
 
                 is ChatUiState.Error -> CenteredBox { ErrorText(text = state.message) }

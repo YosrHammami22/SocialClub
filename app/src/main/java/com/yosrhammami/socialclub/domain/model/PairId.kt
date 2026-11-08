@@ -1,12 +1,13 @@
 package com.yosrhammami.socialclub.domain.model
 
 /**
- * Builds the Firestore document ID for the contact request between two attendees,
- * formatted as `"<smaller>_<larger>"` (lexicographic String comparison).
+ * Builds the ID shared by everything that belongs to a pair of attendees: their contact request
+ * (`contactRequests/{pairId}`) and their conversation (`conversations/{pairId}`), formatted as
+ * `"<smaller>_<larger>"` (lexicographic String comparison).
  *
- * The result is the same regardless of argument order: `generateId(a, b) == generateId(b, a)`,
- * even though the parameters are named sender and receiver. This is deliberate — a pair of
- * attendees has at most one request document, whoever sent it, so either side can look it up.
+ * The result is the same regardless of argument order: `pairIdOf(a, b) == pairIdOf(b, a)`.
+ * This is deliberate — a pair has at most one request and one conversation, whoever started it,
+ * so either side can look them up, and security rules can read the contact from a conversation ID.
  *
  * @throws IllegalArgumentException if a uid is blank, contains `_`, or both uids are equal.
  */
