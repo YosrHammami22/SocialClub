@@ -31,18 +31,18 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 // Stateful — used by MainActivity, connects to the real ViewModel
 @Composable
 fun EventAttendeesScreen(
-    viewModel: EventAttendeesViewModel = hiltViewModel(),
     onGuestClick: (guestAttendeeId: String) -> Unit,
     onBackClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: EventAttendeesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-        EventAttendeesContent(
-            uiState = uiState,
-            onGuestClick = onGuestClick,
-            onBackClick = onBackClick,
-            modifier = modifier.fillMaxSize()
-        )
+    EventAttendeesContent(
+        uiState = uiState,
+        onGuestClick = onGuestClick,
+        onBackClick = onBackClick,
+        modifier = modifier.fillMaxSize()
+    )
 
 }
 

@@ -26,9 +26,9 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 
 @Composable
 fun AppAvatar(
+    modifier: Modifier = Modifier,
     name: String="",
     placeholder: Int = R.drawable.ic_avatar_neutral,
-    modifier: Modifier = Modifier,
     photoUrl: String? = null,
     size: Dp = 48.dp,
     onClick: (() -> Unit)? = null,
