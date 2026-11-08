@@ -1,7 +1,7 @@
 # Plan: Chat between attendees (1-to-1)
 
 **Status:** Plan ✅ (written after the first implementation of the domain, data and ViewModel layers)
-**Spec:** [`spec.md`](./spec.md)
+**Spec:** [`spec.md`](./spec.md) · **Tasks:** [`tasks.md`](./tasks.md)
 
 > This file describes **how** the spec is built in SocialClub's architecture.
 > Every decision points back to an acceptance criterion (AC) or constraint (C) in `spec.md`.
@@ -79,6 +79,15 @@ conversations/{pairId}/messages/{autoId}
 | `ChatRepositoryModule` | Hilt `@Binds` `ChatRepositoryImpl` → `ChatRepository`. | Constructor injection, interface binding (project convention). |
 | `ChatRemoteDataSource` | **Concrete class** (no interface), injected with `FirebaseFirestore` and `FirebaseAuth`. `sendMessage` reads the sender UID from `FirebaseAuth.currentUser` itself. | As built. See open point below. |
 
+### Alternatives considered (data)
+
+| Option | Rejected because |
+|---|---|
+| `ServerTimestampBehavior.NONE` (the default) | A message not yet confirmed has `sentAt == null`; `toMessage()` skips it, so the "sending" bubble would never appear (AC4, AC5). |
+| `ServerTimestampBehavior.PREVIOUS` | Returns the previous server value, which a brand-new message doesn't have: also `null`, same problem. |
+| Device time (`Timestamp.now()`) for `sentAt` | Device clocks can be wrong or changed, so the two participants could see a different order (AC2). The security rules also require `sentAt == request.time` (AC9). |
+| `sendMessage` without `await()` (fire-and-forget) | A rejected write could never be reported, so AC6 would be impossible. Awaiting costs nothing in the UI: the listener already shows the message (AC4). |
+
 ### Open point: `ChatRemoteDataSource` (not decided)
 
 The code differs from two choices made elsewhere in the project:
@@ -103,6 +112,16 @@ Options are to extract an interface and/or pass `senderUid` from `SendMessageUse
 | `request.resource.data.keys().hasOnly(['senderUid', 'text', 'sentAt'])` | No extra fields |
 | `update, delete: if false` | Messages are immutable from the app (deletion on block is a follow-up, done server side) |
 
+> **Where the rules live:** in the Firebase console only. There is no `firestore.rules` in the repo yet,
+> so this table can't be checked against the code and nothing tests the rules (follow-up in `tasks.md`).
+
+### Alternatives considered (validation)
+
+| Option | Rejected because |
+|---|---|
+| Validate on the server only | No immediate feedback: the user would type, send, and only then learn the text was refused (AC4). |
+| Validate in the app only | A modified client can bypass it; only the server actually guarantees C2 and C4 (AC9). |
+
 ---
 
 ## Presentation
@@ -111,8 +130,8 @@ Options are to extract an interface and/or pass `senderUid` from `SendMessageUse
 |---|---|---|
 | `ChatRoute` | `receiverUid`, `receiverName`, `receiverPhotoUrl?`. Read in `ChatViewModel` via `SavedStateHandle`. | AC1. Name and photo passed along to save a Firestore read (accepted trade-off in the spec). |
 | `ChatUiState` | `Loading`, `Empty`, `Content(messages)`, `Blocked`, `Error(message)`. | One state per case in AC2, AC7, AC8. |
-| State exposure | `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loading)`, collected with `collectAsStateWithLifecycle()`. | The listener stops when the screen is in the background, saving reads, but survives a rotation (under 5 s) without re-subscribing. |
-| Send | Clears the field immediately; failures come back as a one-shot event shown as the "Message not sent." toast. | AC4, AC6. A one-shot event, not a state, so the toast is not shown again after rotation. |
+| State exposure | `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loading)`, collected with `collectAsStateWithLifecycle()`. | AC2, AC3. The listener stops when the screen is in the background, saving reads, but survives a rotation (under 5 s) without re-subscribing. |
+| Send | Clears the field immediately; failures come back as a one-shot event shown as the "Message not sent." toast. | AC4, AC6. A one-shot event, not a state, so the toast is not shown again after rotation. **Known gap:** `ChatScreen` doesn't collect `errorEvent` yet, so the toast never appears (see `tasks.md`). |
 | `MessageUiMapper` | Maps `Message` to `MessageUi` (mine/theirs, formatted time, pending flag). | Keeps formatting out of the ViewModel and the Composable; unit-testable. |
 | `ChatScreen` / `ChatContent` | Stateful/stateless split; the input bar is replaced by a notice in `Blocked`. | Project convention; AC7. |
 | Entry point | "Message" button on `AttendeeDetailScreen`, shown only when the contact request status is `ACCEPTED`. | AC1. |
@@ -122,6 +141,9 @@ Options are to extract an interface and/or pass `senderUid` from `SendMessageUse
 | Option | Rejected because |
 |---|---|
 | Re-read the receiver's attendee document in the chat | One extra read per chat open, for data the previous screen already has. |
+| Load in `init{}` into a `MutableStateFlow` (the project's usual one-shot pattern) | The real-time listener would stay open from creation until the ViewModel is cleared, including while the app is in the background, costing reads for nothing. `WhileSubscribed` ties it to the screen being visible (AC3). |
+| `SharingStarted.WhileSubscribed(0)` | A rotation briefly has no collector, so the listener would close and re-open, re-reading the whole conversation. 5 s covers a configuration change. |
+| `SharingStarted.Eagerly` | Same issue as `init{}`: the listener runs as long as the ViewModel lives. |
 
 ---
 

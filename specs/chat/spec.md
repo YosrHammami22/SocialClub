@@ -1,7 +1,7 @@
 # Feature: Chat between attendees (1-to-1)
 
 **Status:** Specify ✅ (written after the first implementation of the domain, data and ViewModel layers)
-**Next:** `plan.md` (how)
+**Next:** `plan.md` (how) · `tasks.md` (steps)
 
 > This file describes **what** Chat must do and **why**.
 > It contains no technology (no Firebase, no Room, no ViewModel).
