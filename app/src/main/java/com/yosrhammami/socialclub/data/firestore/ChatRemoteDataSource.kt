@@ -29,10 +29,12 @@ class ChatRemoteDataSource @Inject constructor(
             .orderBy("sentAt", Query.Direction.ASCENDING)
             .addSnapshotListener(MetadataChanges.INCLUDE) { snapshot, error ->
                 if (error != null) {
-                    // ← NOUVEAU : on traduit l'erreur Firebase en erreur du domain.
-                    // Le read rule refuse l'accès quand le contact n'est plus ACCEPTED (blocage).
+                    // PERMISSION_DENIED is mapped to ContactBlocked: the read rule refuses access once the
+                    // contact is no longer ACCEPTED (AC7). The Firestore error is kept as the cause because
+                    // PERMISSION_DENIED can have other origins (rules missing, wrong conversation id), and
+                    // the logs must still show the real one.
                     val mapped = if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
-                        ChatException.ContactBlocked()
+                        ChatException.ContactBlocked(cause = error)
                     } else {
                         error
                     }
