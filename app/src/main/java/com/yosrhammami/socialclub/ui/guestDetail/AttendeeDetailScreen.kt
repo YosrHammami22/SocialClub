@@ -1,5 +1,4 @@
 package com.yosrhammami.socialclub.ui.guestDetail
-
 import android.widget.Toast
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Arrangement
@@ -51,15 +50,34 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 @Composable
 fun AttendeeDetailScreen(
     onBackClick: () -> Unit,
-    onMessageClick: () -> Unit,
+    onMessageClick: (receiverUid: String, receiverName: String, receiverPhotoUrl: String?) -> Unit,
     viewModel: AttendeeDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    LaunchedEffect(Unit) { viewModel.errorEvent.collect { message ->
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }}
-    AttendeeDetailContent(uiState = uiState,onSendRequestClick=viewModel::onSendRequestClick,onRespondToRequest = viewModel::updateContactRequest, onMessageClick = onMessageClick, onBackClick = onBackClick)
+    LaunchedEffect(Unit) {
+        viewModel.errorEvent.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+    AttendeeDetailContent(
+        uiState = uiState,
+        onSendRequestClick = viewModel::onSendRequestClick,
+        onRespondToRequest = viewModel::updateContactRequest,
+        // ← MODIFIÉ: the Message button only exists in Success + Accepted, so the attendee is loaded.
+        // authUid (not id): the conversation id is built from auth UIDs, like the ContactRequest id.
+        // Blank photoUrl → null, so the chat avatar falls back to initials.
+        onMessageClick = {
+            (uiState as? AttendeeDetailUiState.Success)?.guestAttendee?.let { attendee ->
+                onMessageClick(
+                    attendee.authUid,
+                    attendee.fullName,
+                    attendee.photoUrl.ifBlank { null },
+                )
+            }
+        },
+        onBackClick = onBackClick
+    )
 }
 
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
@@ -72,109 +90,109 @@ fun AttendeeDetailContent(
     onBackClick: (() -> Unit)? = null
 ) {
     Column(Modifier.fillMaxSize()) {
-    // Back only, no title: the guest's name is already the large title under the avatar,
-    // repeating it in the bar would just be noise. Outside the Crossfade so it never fades.
-    AppTopBar(title = "", onBackClick = onBackClick)
-    Crossfade(
-        targetState = uiState,
-        modifier = Modifier.weight(1f),
-        label = "guest detail"
-    ) {state ->
-        when (state) {
-            is AttendeeDetailUiState.Loading -> {
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            is AttendeeDetailUiState.Success -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(Spacing.lg),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AppAvatar(
-                        name = state.guestAttendee.fullName,
-                        photoUrl = state.guestAttendee.photoUrl,
-                        size = 120.dp
-                    )
-
-                    Spacer(Modifier.height(Spacing.md))
-
-                    TitleText(
-                        text = state.guestAttendee.fullName,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(Modifier.height(Spacing.xs))
-
-                    // CaptionText(text = state.guestAttendee.email)
-
-                    Spacer(Modifier.height(Spacing.lg))
-
-                    HorizontalDivider(modifier = Modifier.fillMaxWidth())
-
-                    Spacer(Modifier.height(Spacing.lg))
-
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start
+        // Back only, no title: the guest's name is already the large title under the avatar,
+        // repeating it in the bar would just be noise. Outside the Crossfade so it never fades.
+        AppTopBar(title = "", onBackClick = onBackClick)
+        Crossfade(
+            targetState = uiState,
+            modifier = Modifier.weight(1f),
+            label = "guest detail"
+        ) { state ->
+            when (state) {
+                is AttendeeDetailUiState.Loading -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        LabelText(text = "About")
-                        Spacer(Modifier.height(Spacing.xs))
-                        BodyText(text = state.guestAttendee.prompt)
-
-                        if (state.guestAttendee.tags.isNotEmpty()) {
-                            Spacer(Modifier.height(Spacing.md))
-                            LabelText(text = "Tags")
-                            Spacer(Modifier.height(Spacing.xs))
-                            TagRow(tags = state.guestAttendee.tags)
-                        }
+                        CircularProgressIndicator()
                     }
-
-                    Spacer(Modifier.height(Spacing.lg))
-                    ContactActionButtons(
-                        contactButtonState = state.contactButtonState,
-                        guestName = state.guestAttendee.fullName,
-                        onClick = onSendRequestClick,
-                        onClickListener = onRespondToRequest,
-                        onMessageClick = onMessageClick
-                    )
                 }
-            }
 
-            is AttendeeDetailUiState.Error -> {
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    ErrorText(state.message)
+                is AttendeeDetailUiState.Success -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(Spacing.lg),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AppAvatar(
+                            name = state.guestAttendee.fullName,
+                            photoUrl = state.guestAttendee.photoUrl,
+                            size = 120.dp
+                        )
+
+                        Spacer(Modifier.height(Spacing.md))
+
+                        TitleText(
+                            text = state.guestAttendee.fullName,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(Modifier.height(Spacing.xs))
+
+                        // CaptionText(text = state.guestAttendee.email)
+
+                        Spacer(Modifier.height(Spacing.lg))
+
+                        HorizontalDivider(modifier = Modifier.fillMaxWidth())
+
+                        Spacer(Modifier.height(Spacing.lg))
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+                            LabelText(text = "About")
+                            Spacer(Modifier.height(Spacing.xs))
+                            BodyText(text = state.guestAttendee.prompt)
+
+                            if (state.guestAttendee.tags.isNotEmpty()) {
+                                Spacer(Modifier.height(Spacing.md))
+                                LabelText(text = "Tags")
+                                Spacer(Modifier.height(Spacing.xs))
+                                TagRow(tags = state.guestAttendee.tags)
+                            }
+                        }
+
+                        Spacer(Modifier.height(Spacing.lg))
+                        ContactActionButtons(
+                            contactButtonState = state.contactButtonState,
+                            guestName = state.guestAttendee.fullName,
+                            onClick = onSendRequestClick,
+                            onClickListener = onRespondToRequest,
+                            onMessageClick = onMessageClick
+                        )
+                    }
                 }
-            }
 
-            AttendeeDetailUiState.AttendeeNotFound -> {
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BodyText("Attendee not found")
+                is AttendeeDetailUiState.Error -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ErrorText(state.message)
+                    }
                 }
-            }
 
-            AttendeeDetailUiState.Idle -> {
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+                AttendeeDetailUiState.AttendeeNotFound -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BodyText("Attendee not found")
+                    }
+                }
+
+                AttendeeDetailUiState.Idle -> {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
-    }
     }
 }
 
@@ -182,7 +200,7 @@ fun AttendeeDetailContent(
 @Composable
 private fun TagRow(tags: List<String>) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-        tags.forEach {tag ->
+        tags.forEach { tag ->
             Surface(
                 shape = RoundedCornerShape(50),
                 color = MaterialTheme.colorScheme.secondaryContainer
@@ -199,6 +217,7 @@ private fun TagRow(tags: List<String>) {
         }
     }
 }
+
 @Composable
 private fun ContactActionButtons(
     contactButtonState: ContactRequestButtonState,
@@ -232,7 +251,7 @@ private fun ContactActionButtons(
             ) {
                 AppPrimaryButton(
                     text = stringResource(id = R.string.contact_request_confirm),
-                    onClick = {onClickListener(ContactRequestStatus.ACCEPTED)},
+                    onClick = { onClickListener(ContactRequestStatus.ACCEPTED) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 AppSecondaryButton(
@@ -274,6 +293,7 @@ private fun ContactActionButtons(
         }
     }
 }
+
 // ---------- Previews ----------
 
 @ThemePreviews
@@ -289,12 +309,7 @@ fun AttendeeDetailSuccessPreview() {
                         email = "jane@test.com",
                         photoUrl = "https://randomuser.me/api/portraits/women/44.jpg",
                         prompt = "Android developer who loves hiking, board games, and building side projects on weekends.",
-                        tags = listOf(
-                            "android",
-                            "hiking",
-                            "boardgames",
-                            "kotlin"
-                        ),
+                        tags = listOf("android", "hiking", "boardgames", "kotlin"),
                         age = 22
                     ),
                     contactButtonState = ContactRequestButtonState.NoRequest
@@ -337,7 +352,6 @@ fun AttendeeDetailAcceptedPreview() {
 }
 
 @ThemePreviews
-
 @Composable
 fun AttendeeDetailNoTagsPreview() {
     SocialClubTheme(dynamicColor = false) {
@@ -392,29 +406,38 @@ fun AttendeeDetailGuestHasNoAccountPreview() {
 }
 
 @ThemePreviews
-
 @Composable
 fun AttendeeDetailLoadingPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Loading,onSendRequestClick = {}, onRespondToRequest = {}, onMessageClick = {}, onBackClick = {})
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.Loading,
+                onSendRequestClick = {},
+                onRespondToRequest = {},
+                onMessageClick = {},
+                onBackClick = {}
+            )
         }
     }
 }
 
 @ThemePreviews
-
 @Composable
 fun AttendeeDetailErrorPreview() {
     SocialClubTheme(dynamicColor = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            AttendeeDetailContent(uiState = AttendeeDetailUiState.Error("Network error"), onSendRequestClick = {}, onRespondToRequest = {}, onMessageClick = {}, onBackClick = {})
+            AttendeeDetailContent(
+                uiState = AttendeeDetailUiState.Error("Network error"),
+                onSendRequestClick = {},
+                onRespondToRequest = {},
+                onMessageClick = {},
+                onBackClick = {}
+            )
         }
     }
 }
 
 @ThemePreviews
-
 @Composable
 fun AttendeeDetailNotFoundPreview() {
     SocialClubTheme(dynamicColor = false) {

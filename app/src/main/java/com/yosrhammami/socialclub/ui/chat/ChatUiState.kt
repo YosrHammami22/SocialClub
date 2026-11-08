@@ -18,11 +18,10 @@ sealed interface ChatUiState {
     data class Content(val messages: List<MessageUi>) : ChatUiState
 
     /**
-     * Contact is no longer available (removed/declined): no new messages can be sent, but the
-     * existing history stays readable. Same shape as [Content] on purpose — only the ability
-     * to send differs. Empty [messages] is valid (blocked before anyone wrote anything).
+     * Contact is blocked: all messages are deleted (Cloud Function) and the read rule denies
+     * access, so there is no history to show. Nothing can be read or sent.
      */
-    data class Blocked(val messages: List<MessageUi>) : ChatUiState
+    data object Blocked : ChatUiState
 
     data class Error(val message: String) : ChatUiState
 }

@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.yosrhammami.socialclub"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName = "$versionMajor.$versionMinor.$versionPatch"

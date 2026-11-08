@@ -53,6 +53,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.ui.components.AppAvatar
 import com.yosrhammami.socialclub.ui.components.BodyText
@@ -66,6 +68,24 @@ import com.yosrhammami.socialclub.ui.theme.preview.ThemePreviews
 // No stateful ChatScreen yet: S2 is UI-only. The Hilt-backed `ChatScreen` (collecting a
 // ViewModel's StateFlow and delegating here) arrives with the ViewModel story.
 
+@Composable
+fun ChatScreen(
+    onBack: () -> Unit,
+    viewModel: ChatViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // errorEvent : affiche-le comme dans AttendeeDetailScreen (Snackbar ou Toast)
+
+    ChatContent(
+        receiverName = viewModel.receiverName,
+        receiverPhotoUrl = viewModel.receiverPhotoUrl,
+        uiState = uiState,
+        draft = viewModel.draft,
+        onTextChange = viewModel::onTextChange,
+        onSend = viewModel::onSend,
+        onBack = onBack,
+    )
+}
 // Stateless — pure UI, previewable, no ViewModel/Hilt involved
 @Composable
 fun ChatContent(
@@ -94,7 +114,7 @@ fun ChatContent(
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             contentKey = { state ->
                 when (state) {
-                    is ChatUiState.Content, is ChatUiState.Blocked -> "messages"
+                    is ChatUiState.Content -> "messages"
                     else -> state::class
                 }
             },
@@ -112,10 +132,7 @@ fun ChatContent(
                 )
 
                 // History stays readable: losing the contact shouldn't erase what was said.
-                is ChatUiState.Blocked -> MessageList(
-                    messages = state.messages,
-                    receiverName = receiverName
-                )
+                is ChatUiState.Blocked -> CenteredBox { }
 
                 is ChatUiState.Error -> CenteredBox { ErrorText(text = state.message) }
             }
@@ -516,7 +533,7 @@ fun ChatContentBlockedPreview() {
             ChatContent(
                 receiverName = "Camille Martin",
                 receiverPhotoUrl = "https://randomuser.me/api/portraits/women/68.jpg",
-                uiState = ChatUiState.Blocked(previewMessages.take(4)),
+                uiState = ChatUiState.Blocked,
                 draft = "",
                 onTextChange = {},
                 onSend = {},

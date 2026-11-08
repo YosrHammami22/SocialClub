@@ -23,6 +23,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.yosrhammami.socialclub.R
 import com.yosrhammami.socialclub.core.util.Logger
+import com.yosrhammami.socialclub.ui.chat.ChatScreen                       // ← NOUVEAU
 import com.yosrhammami.socialclub.ui.createPassword.CreatePasswordScreen
 import com.yosrhammami.socialclub.ui.currentAttendee.AttendeeScreen
 import com.yosrhammami.socialclub.ui.guestDetail.AttendeeDetailScreen
@@ -53,7 +54,8 @@ fun AppNavHost(
             }
         }
     }
-// Logs every screen change, in one place
+
+    // Logs every screen change, in one place
     DisposableEffect(navController) {
         val listener = NavController.OnDestinationChangedListener { _, destination, _ ->
             logger.d("Navigation -> ${destination.route}")
@@ -72,81 +74,87 @@ fun AppNavHost(
             composable<HomeRoute> {
                 // The NavHost only maps outcomes to routes; which outcome applies (session or not)
                 // is decided in CheckFirstConnectionUseCase, where it is unit-tested.
-                HomeScreen(onValidEmail = {email ->
-                    navController.navigateToAttendeeClearingBackStack(email)
-                },
-                    onSignInRequired = {email ->
+                HomeScreen(
+                    onValidEmail = { email ->
+                        navController.navigateToAttendeeClearingBackStack(email)
+                    },
+                    onSignInRequired = { email ->
                         navController.navigate(SignInRoute(email = email)) { launchSingleTop = true }
                     },
-                    onFirstConnection = {attendeeId, email ->
+                    onFirstConnection = { attendeeId, email ->
                         navController.navigate(CreatePasswordRoute(attendeeId = attendeeId, email = email)) {
                             launchSingleTop = true
                         }
                     },
                     onGetFromApiClick = {
                         navController.navigate(PeopleListRoute)
-                    })
+                    }
+                )
             }
-            composable<AttendeeRoute> {backStackEntry ->
-                val route: AttendeeRoute = backStackEntry.toRoute() // needs no backStackEntry.toRoute() thinks to SavedStateHandle
+            composable<AttendeeRoute> { backStackEntry ->
+                val route: AttendeeRoute = backStackEntry.toRoute()
                 AttendeeScreen(
-                    onEventClick = {eventId ->
-                        navController.navigate(
-                            EventAttendeesRoute(
-                                eventId = eventId
-                            )
-                        )
+                    onEventClick = { eventId ->
+                        navController.navigate(EventAttendeesRoute(eventId = eventId))
                     },
                     onSettingsClick = {
                         navController.navigate(SettingsRoute) { launchSingleTop = true }
-                    })
+                    }
+                )
             }
             composable<SettingsRoute> {
                 // Only Back is wired here: after logout, the auth observer above navigates.
                 SettingsScreen(onBackClick = { navController.popBackStack() })
             }
             composable<CreatePasswordRoute> {
-                CreatePasswordScreen(onAccountCreated = {email ->
+                CreatePasswordScreen(onAccountCreated = { email ->
                     // Once identified, Back closes the app: no return to Home or this form (spec AC9).
                     navController.navigateToAttendeeClearingBackStack(email)
                 })   // attendeeId + email come automatically via SavedStateHandle
             }
             composable<SignInRoute> {
-                SignInScreen(onSignedIn = {email ->
+                SignInScreen(onSignedIn = { email ->
                     // Same as CreatePassword: Back from the attendee screen closes the app (spec AC9).
                     navController.navigateToAttendeeClearingBackStack(email)
                 })   // email comes automatically via SavedStateHandle
             }
-            composable<EventAttendeesRoute>(
-
-            ) {
-
-                    EventAttendeesScreen(
-                        onGuestClick = { guestId ->
-                            navController.navigate(AttendeeDetailRoute(attendeeId = guestId))
-                        },
-                        onBackClick = { navController.popBackStack() }
-                    )   // eventId comes automatically via SavedStateHandle
-
-
+            composable<EventAttendeesRoute> {
+                EventAttendeesScreen(
+                    onGuestClick = { guestId ->
+                        navController.navigate(AttendeeDetailRoute(attendeeId = guestId))
+                    },
+                    onBackClick = { navController.popBackStack() }
+                )   // eventId comes automatically via SavedStateHandle
             }
-            composable<AttendeeDetailRoute> {
+            composable<AttendeeDetailRoute> {                                    // ← MODIFIÉ (bloc remis)
                 AttendeeDetailScreen(
                     onBackClick = { navController.popBackStack() },
-                    onMessageClick = { /* TODO chat S2: navigate to ChatRoute once ChatScreen exists */ }
+                    // receiverUid must be the attendee's authUid (not attendeeId): the conversation
+                    // id is built from auth UIDs, like the ContactRequest id.
+                    onMessageClick = { receiverUid, receiverName, receiverPhotoUrl ->
+                        navController.navigate(
+                            ChatRoute(
+                                receiverUid = receiverUid,
+                                receiverName = receiverName,
+                                receiverPhotoUrl = receiverPhotoUrl,
+                            )
+                        ) { launchSingleTop = true }
+                    }
                 )
             }
-
+            composable<ChatRoute> {                                              // ← NOUVEAU
+                ChatScreen(onBack = { navController.popBackStack() })
+                // receiverUid, receiverName, receiverPhotoUrl come automatically via SavedStateHandle
+            }
             composable<PeopleListRoute> {
-                PeopleListScreen(onPersonClick = {personId ->
+                PeopleListScreen(onPersonClick = { personId ->
                     navController.navigate(PersonDetailRoute(personId))
                 })
             }
-            composable<PersonDetailRoute> {backStackEntry ->
+            composable<PersonDetailRoute> { backStackEntry ->
                 val route: PersonDetailRoute = backStackEntry.toRoute()
                 PersonDetailScreen(personId = route.personId) // <- explicit, visible value
             }
-
         }
 
         SnackbarHost(
