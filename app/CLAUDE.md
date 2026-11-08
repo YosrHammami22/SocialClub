@@ -93,7 +93,7 @@ attendee being viewed (event's guest list, or their detail screen).
   `FakeLogger` in tests) — never a static `AppLog` object directly in a
   class under test; this was a deliberate refactor after a static logger
   caused "Log not mocked" crashes in JVM unit tests.
-- min SDK 24, target/compile SDK 34/35.
+- min SDK 26, target SDK 34, compile SDK 37.
 
 ## Design system (`ui/theme/`, `ui/components/`)
 - Color: Material 3 tonal palette generated via the Material Theme Builder
