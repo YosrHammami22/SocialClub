@@ -58,8 +58,8 @@ conversations/{pairId}/messages/{autoId}
 |---|---|---|
 | `Message` | `id`, `senderUid`, `text`, `sentAt: Long`, `isPending: Boolean`. No Firebase types. | Domain stays platform-agnostic (KMP-friendly). `isPending` drives the "sending" indicator (AC4, AC5). |
 | `ChatRepository` | Interface: `observeMessages(conversationId): Flow<List<Message>>`, `suspend sendMessage(conversationId, text): Result<Unit>`. | Mockable in tests; hides Firestore from the domain. |
-| `ObserveMessagesUseCase` | Returns the repository's cold `Flow`, forwarding items and errors unchanged. | AC2, AC3. Tested with Turbine (it is a stream). |
-| `SendMessageUseCase` | Validates the **raw** text: blank → `ChatException.EmptyMessage`, > 1000 → `ChatException.MessageTooLong(max)`; then sends. | AC4, C4. Same limit as the security rules. Validates without trimming, so what is checked is what is sent. |
+| `ObserveMessagesUseCase` | `invoke(receiverUid)`: reads the current UID from `AuthRepository` (none → fails with `AuthException.NoSignedInUser`), builds `pairIdOf(currentUid, receiverUid)`, then forwards the repository's cold `Flow` items and errors unchanged. | AC2, AC3. The use case, not the ViewModel, knows how a conversation ID is built, so the UI only deals with the receiver. Tested with Turbine (it is a stream). |
+| `SendMessageUseCase` | `invoke(receiverUid, text)`, in this order: blank → `ChatException.EmptyMessage`; > `MAX_MESSAGE_LENGTH` (1000) → `ChatException.MessageTooLong(max)`; no signed-in user → `AuthException.NoSignedInUser`; `pairIdOf` fails (e.g. receiver is the current user) → its `IllegalArgumentException`; then sends. Every failure is returned as `Result.failure`, never thrown. | AC4, C4. Same limit as the security rules. Validates the **raw** text without trimming, so what is checked is what is sent. Text checks come first, so invalid input never reaches auth or the repository. |
 | `ChatException` | Sealed: `EmptyMessage`, `MessageTooLong(max)`, `ContactBlocked`. | Typed failures the ViewModel can map to states (AC6, AC7). |
 
 ---
@@ -70,11 +70,25 @@ conversations/{pairId}/messages/{autoId}
 |---|---|---|
 | `MessageDto` | Default values on every field; `sentAt` annotated `@ServerTimestamp`. | `toObject()` needs a no-arg constructor (project convention). `@ServerTimestamp` lets the server set the time, never the device clock. |
 | `ChatRemoteDataSource.observeMessages` | `callbackFlow` around a snapshot listener, ordered by `sentAt` ascending; listener removed in `awaitClose`. | AC2 (oldest first), AC3 (real time). `awaitClose` prevents a leaked listener when the collector stops. |
+| Listener option | `addSnapshotListener(MetadataChanges.INCLUDE)`. | AC4: when the server confirms a message, only its **metadata** changes (`hasPendingWrites` goes from `true` to `false`), not its data. Without `INCLUDE`, no new snapshot is emitted for that change, so the "sending" indicator would never disappear. |
 | Pending messages | Read snapshots with `ServerTimestampBehavior.ESTIMATE`; `isPending = metadata.hasPendingWrites()`. | A local, unconfirmed write has no server time yet; ESTIMATE gives it a local estimate so it sorts at the bottom instead of being `null`. `hasPendingWrites()` is exactly "not confirmed by the server" (AC4, AC5). |
+| `DocumentSnapshot.toMessage()` | Returns `null`, and the message is **skipped silently**, when the document can't be deserialized, has no `sentAt`, or has a blank `senderUid`. | One malformed document must not fail the whole conversation (which would show the Error state, AC8). **Trade-off:** a skipped message is invisible to both participants and leaves no trace (not logged). With the security rules (AC9) such documents should not exist. |
 | `sendMessage` | Adds the document and **awaits server confirmation**, returning `Result`. | A failure can be reported (AC6). The UI does not wait on it: the listener shows the message at once (AC4). |
 | Permission denied | `PERMISSION_DENIED` from the listener is mapped to `ChatException.ContactBlocked`. | AC7: a refused read means the contact is no longer accepted. |
 | Firestore cache | **Unchanged:** memory cache only (`FirestoreModule`, from the Logout plan). | Keeps Logout AC5. Consequence: the offline queue lives in memory only, so AC5 holds while the app runs (spec Q1). |
 | `ChatRepositoryModule` | Hilt `@Binds` `ChatRepositoryImpl` → `ChatRepository`. | Constructor injection, interface binding (project convention). |
+| `ChatRemoteDataSource` | **Concrete class** (no interface), injected with `FirebaseFirestore` and `FirebaseAuth`. `sendMessage` reads the sender UID from `FirebaseAuth.currentUser` itself. | As built. See open point below. |
+
+### Open point: `ChatRemoteDataSource` (not decided)
+
+The code differs from two choices made elsewhere in the project:
+
+| Difference | Elsewhere | Consequence |
+|---|---|---|
+| Concrete class, no interface | `AuthRemoteDataSource` is an interface so tests can mock it (project rule: mock interfaces, never concrete classes). | `ChatRepositoryImpl` can't be unit-tested with a MockK mock of its data source; there are no chat data-layer tests today. |
+| Sender UID read from `FirebaseAuth` in the data source | The use cases read the current UID from `AuthRepository`. | Two sources for "who is signed in" in one send. They agree today; if one changes (e.g. a test fake), they can disagree. Passing the UID from the use case down would leave one source. |
+
+Options are to extract an interface and/or pass `senderUid` from `SendMessageUseCase`. Neither changes behavior; not applied yet.
 
 ---
 
@@ -118,7 +132,7 @@ conversations/{pairId}/messages/{autoId}
 | AC1 | `AttendeeDetailScreen` button condition, `ChatRoute(receiverUid = authUid)` |
 | AC2 | `ChatUiState` (`Loading` / `Empty` / `Content`), `orderBy(sentAt)` |
 | AC3 | Snapshot listener in `ChatRemoteDataSource`, `ObserveMessagesUseCase` |
-| AC4 | `SendMessageUseCase` validation, `isPending` via `hasPendingWrites()`, field cleared in `ChatViewModel` |
+| AC4 | `SendMessageUseCase` validation, `isPending` via `hasPendingWrites()` + `MetadataChanges.INCLUDE`, field cleared in `ChatViewModel` |
 | AC5 | Firestore's in-memory write queue + `isPending` (restart case: spec Q1) |
 | AC6 | `sendMessage` returns `Result`; one-shot event → toast |
 | AC7 | `PERMISSION_DENIED` → `ChatException.ContactBlocked` → `ChatUiState.Blocked` |
