@@ -174,6 +174,12 @@ attendee being viewed (event's guest list, or their detail screen).
   assertions on the *specific* content of the state (exact message string),
   not just its type — a type-only assertion (`state is Error`) would pass
   even with the wrong error message and hide a real bug.
+  This applies to text the user sees. Domain exceptions (e.g.
+  `ChatException`) are asserted by **type** (plus meaningful properties
+  such as `MessageTooLong.max`), not by their message text: that text is
+  never shown (the ViewModel maps errors to its own strings), so asserting
+  it only makes tests brittle. Exception: a test whose subject *is* the
+  message (e.g. `ChatExceptionTest`).
 - `SavedStateHandle(mapOf("key" to value))` is how route-argument-driven
   ViewModels are constructed in tests — no real Navigation/Hilt needed.
 
