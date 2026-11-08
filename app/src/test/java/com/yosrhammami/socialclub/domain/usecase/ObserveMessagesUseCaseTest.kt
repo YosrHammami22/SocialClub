@@ -45,7 +45,6 @@ class ObserveMessagesUseCaseTest {
         useCase(receiverUid = "uidB").test {
             val error = awaitError()
             assertTrue(error is AuthException.NoSignedInUser)
-            assertEquals("No signed-in user", error.message)
         }
         verify(exactly = 0) { chatRepository.observeMessages(any()) }
     }

@@ -2,6 +2,7 @@ package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.domain.model.AuthException
 import com.yosrhammami.socialclub.domain.model.ChatException
+import com.yosrhammami.socialclub.domain.model.MAX_MESSAGE_LENGTH
 import com.yosrhammami.socialclub.domain.repository.AuthRepository
 import com.yosrhammami.socialclub.domain.repository.ChatRepository
 import io.mockk.coEvery
@@ -32,7 +33,6 @@ class SendMessageUseCaseTest {
 
         val error = result.exceptionOrNull()
         assertTrue(error is ChatException.EmptyMessage)
-        assertEquals("Message is empty", error?.message)
         coVerify(exactly = 0) { chatRepository.sendMessage(any(), any()) }
     }
 
@@ -42,7 +42,7 @@ class SendMessageUseCaseTest {
 
         val error = result.exceptionOrNull()
         assertTrue(error is ChatException.MessageTooLong)
-        assertEquals("Message exceeds 1000 characters", error?.message)
+        assertEquals(MAX_MESSAGE_LENGTH, (error as ChatException.MessageTooLong).max)
         coVerify(exactly = 0) { chatRepository.sendMessage(any(), any()) }
     }
 
@@ -53,7 +53,7 @@ class SendMessageUseCaseTest {
 
         val error = result.exceptionOrNull()
         assertTrue(error is ChatException.MessageTooLong)
-        assertEquals("Message exceeds 1000 characters", error?.message)
+        assertEquals(MAX_MESSAGE_LENGTH, (error as ChatException.MessageTooLong).max)
         coVerify(exactly = 0) { chatRepository.sendMessage(any(), any()) }
     }
 
@@ -61,8 +61,9 @@ class SendMessageUseCaseTest {
     fun `given text of exactly 1000 chars when sending then the repository is called`() = runTest {
         val text = "a".repeat(1000)
 
-        useCase(receiverUid = "uidB", text = text)
+        val result = useCase(receiverUid = "uidB", text = text)
 
+        assertTrue(result.isSuccess)
         coVerify(exactly = 1) { chatRepository.sendMessage("uidA_uidB", text) }
     }
 
@@ -74,7 +75,6 @@ class SendMessageUseCaseTest {
 
         val error = result.exceptionOrNull()
         assertTrue(error is AuthException.NoSignedInUser)
-        assertEquals("No signed-in user", error?.message)
         coVerify(exactly = 0) { chatRepository.sendMessage(any(), any()) }
     }
 

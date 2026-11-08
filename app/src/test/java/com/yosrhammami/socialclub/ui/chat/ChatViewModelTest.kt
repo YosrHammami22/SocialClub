@@ -149,6 +149,19 @@ class ChatViewModelTest {
         coVerify(exactly = 1) { sendMessageUseCase("uidLea", "Hello Léa") }
     }
 
+    // AC4: the raw text is what gets validated and sent. Surrounding spaces on purpose, so a
+    // ViewModel that trimmed the draft before sending would fail here.
+    @Test
+    fun `onSend sends the raw draft, untrimmed`() = runTest {
+        coEvery { sendMessageUseCase(any(), any()) } returns Result.success(Unit)
+        val viewModel = createViewModel()
+        viewModel.onTextChange("  Hello Léa  ")
+
+        viewModel.onSend()
+
+        coVerify(exactly = 1) { sendMessageUseCase("uidLea", "  Hello Léa  ") }
+    }
+
     @Test
     fun `onSend clears the draft before the send completes`() = runTest {
         // Decision A: the field empties immediately, it doesn't wait for the network.
