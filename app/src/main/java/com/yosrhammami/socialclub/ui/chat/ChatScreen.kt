@@ -1,5 +1,6 @@
 package com.yosrhammami.socialclub.ui.chat
 
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,10 +34,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -71,7 +74,15 @@ fun ChatScreen(
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    // errorEvent : affiche-le comme dans AttendeeDetailScreen (Snackbar ou Toast)
+    val context = LocalContext.current
+    // AC6: a failed send is a one-off event, not a state, so it's collected here and shown once as a
+    // toast (same pattern as AttendeeDetailScreen). Keyed on Unit: one collector for the screen's
+    // lifetime; a rotation recomposes the screen but the ViewModel (and its SharedFlow) survives.
+    LaunchedEffect(Unit) {
+        viewModel.errorEvent.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     ChatContent(
         receiverName = viewModel.receiverName,
