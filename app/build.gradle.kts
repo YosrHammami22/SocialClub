@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 val versionMajor = 1
-val versionMinor = 6
+val versionMinor = 7
 val versionPatch = 0
 
 android {
@@ -19,7 +19,7 @@ android {
 
     defaultConfig {
         applicationId = "com.yosrhammami.socialclub"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = versionMajor * 10000 + versionMinor * 100 + versionPatch
         versionName = "$versionMajor.$versionMinor.$versionPatch"

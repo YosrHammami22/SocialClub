@@ -2,6 +2,7 @@ package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.FakeContactRequestRepository
 import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import com.yosrhammami.socialclub.domain.model.ContactRequestStatus
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -12,7 +13,7 @@ class UpdateContactRequestStatusUseCaseTest {
     private val repository = FakeContactRequestRepository()
     private val useCase = UpdateContactRequestStatusUseCase(repository)
 
-    private val pairId = ContactRequest.generateId("A1", "B2")
+    private val pairId = pairIdOf("A1", "B2")
     // B2 asked A1: A1 is the receiver, the only one allowed to answer.
     private val pendingFromB2 = ContactRequest(pairId, senderAuthUid = "B2", receiverAuthUid = "A1", status = ContactRequestStatus.PENDING, createdAt = 1_000L)
 

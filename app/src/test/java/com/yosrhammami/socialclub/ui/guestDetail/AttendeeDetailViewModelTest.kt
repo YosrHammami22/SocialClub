@@ -99,7 +99,7 @@ class AttendeeDetailViewModelTest {
     }
 
     // Without an account the guest has no auth uid to key a request on; observing would
-    // make generateId() throw inside viewModelScope, so we show GuestHasNoAccount instead.
+    // make pairIdOf() throw inside viewModelScope, so we show GuestHasNoAccount instead.
     @Test
     fun `when guest has no auth account, button state is GuestHasNoAccount and nothing is observed`(): Unit = runTest {
         coEvery { getAttendeeUseCase.invoke("guest1") } returns guest.copy(authUid = "")

@@ -81,7 +81,7 @@ class AttendeeDetailViewModel @Inject constructor(
     Contact requests are keyed by Firebase Auth UIDs, not attendee document IDs: the UID is the
     identity Firebase Auth actually proves. The guest's UID only exists on the loaded Attendee (the
     route only carries the doc ID), so we read it from the Success state.
-    A blank UID means that attendee has no account yet — generateId() would throw, so we bail out.
+    A blank UID means that attendee has no account yet — pairIdOf() would throw, so we bail out.
      */
     private fun authUidPairOrNull(): Pair<String, String>? {
         val currentAuthUid = sessionManager.currentAttendee.value?.authUid
@@ -117,7 +117,7 @@ class AttendeeDetailViewModel @Inject constructor(
     fun onSendRequestClick() {
         viewModelScope.launch {
             val (currentAuthUid, otherAuthUid) = authUidPairOrNull() ?: return@launch
-            // generateId() validates uids with require(), which throws before the use case
+            // pairIdOf() validates uids with require(), which throws before the use case
             // can return a Result — fold that into the same failure path as a network error.
             val result = try {
                 sendContactRequestUseCase(currentAuthUid, otherAuthUid)

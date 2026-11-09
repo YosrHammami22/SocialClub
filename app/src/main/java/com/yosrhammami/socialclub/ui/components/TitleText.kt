@@ -55,12 +55,14 @@ fun BodyText(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurface,
     maxLines: Int = Int.MAX_VALUE,
-    overflow: TextOverflow = TextOverflow.Clip
+    overflow: TextOverflow = TextOverflow.Clip,
+    textAlign: TextAlign? = null
 ) {
     Text(
         text = text,
         style = MaterialTheme.typography.bodyLarge,
         color = color,
+        textAlign = textAlign,
         maxLines = maxLines,
         overflow = overflow,
         modifier = modifier

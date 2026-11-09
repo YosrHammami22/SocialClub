@@ -2,6 +2,7 @@ package com.yosrhammami.socialclub.domain.usecase
 
 import com.yosrhammami.socialclub.core.util.runSuspendCatching
 import com.yosrhammami.socialclub.domain.model.ContactRequest
+import com.yosrhammami.socialclub.domain.model.pairIdOf
 import com.yosrhammami.socialclub.domain.repository.ContactRequestRepository
 import javax.inject.Inject
 
@@ -17,9 +18,9 @@ class SendContactRequestUseCase @Inject constructor(
         if (senderId == receiverId) {
             return Result.failure(IllegalArgumentException("Cannot send a contact request to yourself"))
         }
-        // generateId() validates the uids with require(): turn that into a failed Result, so this
+        // pairIdOf() validates the uids with require(): turn that into a failed Result, so this
         // use case never throws for bad input.
-        val id = runSuspendCatching { ContactRequest.generateId(senderId, receiverId) }
+        val id = runSuspendCatching { pairIdOf(senderId, receiverId) }
             .getOrElse { return Result.failure(it) }
 
         // The existing request is checked inside the transaction, not read beforehand: a plain

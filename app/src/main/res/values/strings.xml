@@ -3,8 +3,6 @@
     <string name="home_email_label">Enter your email</string>
     <string name="find_registration">Find my registration</string>
     <string name="get_from_api">Get from RandomUser API</string>
-    <string name="email_label">Get from RandomUser API</string>
-    <string name="home_find_registration_button">home find registration button</string>
     <string name="unknown_event">Unknown event</string>
     <string name="unknown_location">Unknown location</string>
     <string name="no_registrations_found">No registrations found.</string>
@@ -31,6 +29,18 @@
     <string name="contact_request_accepted">Accepted</string>
     <string name="contact_request_delete">Declined</string>
     <string name="contact_request_guest_has_no_account">This person hasn\'t installed the app yet</string>
+    <string name="chat_message_button">Message</string>
+    <string name="chat_message_button_description">Send a message to %1$s</string>
+
+    <!-- Chat -->
+    <string name="chat_input_placeholder">Message</string>
+    <string name="chat_send_button">Send message</string>
+    <string name="chat_sending">Sending</string>
+    <string name="chat_bubble_mine_description">You, %1$s: %2$s</string>
+    <string name="chat_bubble_theirs_description">%1$s, %2$s: %3$s</string>
+    <string name="chat_empty_title">No messages yet</string>
+    <string name="chat_empty_body">Say hi to %1$s and break the ice 👋</string>
+    <string name="chat_blocked">%1$s is no longer available. You can\'t send new messages in this conversation.</string>
     <string name="settings_title">Settings</string>
     <string name="settings_logout_button">Log out</string>
     <string name="settings_logging_out">Logging out</string>

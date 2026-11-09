@@ -20,10 +20,19 @@ account due to an unresolved account-access issue on the original one).
    separate demo feature (list/detail of random fake people), unrelated to the
    event/attendee system. Retrofit + GSON, its own DTOs/mapper (`PersonDto` →
    `Person`).
-2. **Firestore** (`Attendee`, `Event`, `Registration`) — the real app logic.
-   Three collections: `attendees` (doc ID = the attendee's own ID), `events`,
-   `registrations` (links the other two via `personId`/`eventId` reference
-   fields, not embedded data).
+2. **Firestore** (`Attendee`, `Event`, `Registration`, `ContactRequest`,
+   `Message`) — the real app logic. Collections: `attendees` (doc ID = the
+   attendee's own ID), `events`, `registrations` (links the other two via
+   `personId`/`eventId` reference fields, not embedded data),
+   `contactRequests` (doc ID = `pairIdOf(authUidA, authUidB)`: the two
+   Firebase Auth UIDs sorted and joined by `_`, so either side finds the same
+   document), and `conversations/{pairId}/messages` (same `pairId` as the
+   contact request, so security rules can read the contact status from a
+   conversation ID; the parent `conversations/{pairId}` document isn't
+   written yet).
+   **Security rules live in the Firebase console only** — there is no
+   `firestore.rules` in the repo yet, so they aren't versioned, reviewed or
+   tested (follow-up, `specs/chat/tasks.md`).
 
 Naming convention, used consistently: **`currentAttendee`** = the logged-in
 user (whoever submitted their email on Home); **`guestAttendee`** = any other
@@ -52,14 +61,30 @@ attendee being viewed (event's guest list, or their detail screen).
   `LaunchedEffect` + a manual `if (alreadyLoaded) return` guard) where that
   was chosen deliberately for traceability — both patterns are intentional,
   not inconsistency.
+- **One-shot loads vs real-time listeners.** A one-shot load (fetch once,
+  show the result) uses `init{}` as above. A real-time Firestore listener
+  (e.g. `ChatViewModel.uiState`) is exposed with
+  `stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Loading)`
+  instead: the listener only runs while the screen collects it, closes 5 s
+  after the screen stops observing (app in background → no reads wasted),
+  and survives a rotation without re-subscribing. `init{}` would keep the
+  listener open until the ViewModel is cleared. Both patterns are
+  intentional.
 - **`SessionManager`** (`@Singleton`, no interface needed) holds
   `currentAttendee: StateFlow<Attendee?>` — the one piece of genuinely
-  app-wide state. Any ViewModel injects it directly rather than threading
+  app-wide state the app manages itself (the signed-in identity is owned by
+  Firebase Auth, see below). Any ViewModel injects it directly rather than threading
   the current user's ID through navigation route arguments. This was a
   deliberate simplification after first trying to share it via navigation
   route arguments and via a shared-ViewModel-across-back-stack-entries
   technique — both work, but were more ceremony than this app-wide need
   justified.
+- **Current user identity: two sources, two jobs.** Anything checked by
+  Firestore security rules (contact requests, messages, `pairIdOf`) uses the
+  **Firebase Auth UID**, read through `AuthRepository.currentUserUid()` —
+  rules only know `request.auth.uid`, never an attendee document ID.
+  `SessionManager` stays the source of the current **`Attendee` profile**
+  (name, photo, email, attendee ID) for display and attendee/event queries.
 - Setting session state is a ViewModel responsibility, not a use case's —
   use cases stay narrowly about fetching/combining data; "this fetch means
   the user is now logged in" is a presentation-layer interpretation of that
@@ -93,7 +118,7 @@ attendee being viewed (event's guest list, or their detail screen).
   `FakeLogger` in tests) — never a static `AppLog` object directly in a
   class under test; this was a deliberate refactor after a static logger
   caused "Log not mocked" crashes in JVM unit tests.
-- min SDK 24, target/compile SDK 34/35.
+- min SDK 26, target SDK 34, compile SDK 37.
 
 ## Design system (`ui/theme/`, `ui/components/`)
 - Color: Material 3 tonal palette generated via the Material Theme Builder
@@ -146,12 +171,22 @@ attendee being viewed (event's guest list, or their detail screen).
   can't resolve inside `@Preview`.
 
 ## Testing conventions
-- JUnit4 + MockK + `kotlinx-coroutines-test`. **No Turbine** — plain
-  `viewModel.uiState.value` assertions after construction (most ViewModels
-  trigger their load in `init{}`, so construction alone is enough to
-  assert against) have been sufficient so far; revisit only if a test
-  genuinely needs to assert an intermediate emission, not just the final
-  state.
+- JUnit4 + MockK + `kotlinx-coroutines-test`. **Turbine only where it's
+  needed**: for `StateFlow` UI state, plain `viewModel.uiState.value`
+  assertions after construction stay the default (most ViewModels trigger
+  their load in `init{}`, so construction alone is enough to assert
+  against). Turbine (`flow.test { awaitItem() / awaitError() }`) is used
+  when a test must observe a stream itself: one-shot events
+  (`AttendeeDetailViewModel.errorEvent`), or a cold `Flow` returned by a
+  use case that must forward items unchanged or fail with an error
+  (`ObserveMessagesUseCase`).
+- **Exception to "read `.value` after construction":** a `StateFlow` built
+  with `stateIn(..., WhileSubscribed(...), ...)` only runs its upstream while
+  something collects it. Reading `uiState.value` right after construction
+  stays `Loading` forever. Tests must collect it: Turbine
+  (`uiState.test { ... }`) or a `backgroundScope` collector on
+  `UnconfinedTestDispatcher(testScheduler)` that plays the Composable's role
+  (see `ChatViewModelTest.subscribe()`), then read `.value`.
 - `MainDispatcherRule` (in the shared test source set) swaps
   `Dispatchers.Main` for a test dispatcher around every test —
   **`UnconfinedTestDispatcher`** specifically (not `StandardTestDispatcher`),
@@ -171,6 +206,12 @@ attendee being viewed (event's guest list, or their detail screen).
   assertions on the *specific* content of the state (exact message string),
   not just its type — a type-only assertion (`state is Error`) would pass
   even with the wrong error message and hide a real bug.
+  This applies to text the user sees. Domain exceptions (e.g.
+  `ChatException`) are asserted by **type** (plus meaningful properties
+  such as `MessageTooLong.max`), not by their message text: that text is
+  never shown (the ViewModel maps errors to its own strings), so asserting
+  it only makes tests brittle. Exception: a test whose subject *is* the
+  message (e.g. `ChatExceptionTest`).
 - `SavedStateHandle(mapOf("key" to value))` is how route-argument-driven
   ViewModels are constructed in tests — no real Navigation/Hilt needed.
 
