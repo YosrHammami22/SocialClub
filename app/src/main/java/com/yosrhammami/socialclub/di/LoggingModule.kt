@@ -1,7 +1,7 @@
 package com.yosrhammami.socialclub.di
 
-import com.yosrhammami.socialclub.core.util.AppLog
 import com.yosrhammami.socialclub.core.util.Logger
+import com.yosrhammami.socialclub.core.util.TimberLogger
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,5 +13,5 @@ import javax.inject.Singleton
 abstract class LoggingModule {
     @Binds
     @Singleton
-    abstract fun bindLogger(impl: AppLog): Logger
+    abstract fun bindLogger(impl: TimberLogger): Logger
 }

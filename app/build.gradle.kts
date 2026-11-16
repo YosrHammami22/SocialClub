@@ -91,6 +91,8 @@ dependencies {
     // Add Firestore and Auth (versions are managed by the BoM)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    // Timber: backs the Logger interface; trees are planted once in SocialClubApp
+    implementation(libs.timber)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
